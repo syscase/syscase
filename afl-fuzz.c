@@ -7678,6 +7678,14 @@ static char** get_qemu_argv(int qemu_mode, u8* own_loc, char** argv, int argc) {
 
   }
 
+  cp = alloc_printf("%s", argv[0]);
+  if (qemu_mode > 1 && !access(cp, X_OK)) {
+
+    target_path = new_argv[0] = cp;
+    return new_argv;
+
+  }
+
   SAYF("\n" cLRD "[-] " cRST
        "Oops, unable to find the 'afl-qemu-trace' binary. The binary must be built\n"
        "    separately by following the instructions in qemu_mode/README.qemu. If you\n"
