@@ -2107,6 +2107,11 @@ EXP_ST void init_forkserver(char** argv) {
 
   it.it_value.tv_sec = ((exec_tmout * FORK_WAIT_MULT) / 1000);
   it.it_value.tv_usec = ((exec_tmout * FORK_WAIT_MULT) % 1000) * 1000;
+  
+  // OPTEE-DEBUG START
+  ACTF("Wait %lus for fork server to come up", it.it_value.tv_sec);
+  fflush(stdout);
+  // OPTEE-DEBUG END
 
   setitimer(ITIMER_REAL, &it, NULL);
 
@@ -2116,6 +2121,11 @@ EXP_ST void init_forkserver(char** argv) {
   it.it_value.tv_usec = 0;
 
   setitimer(ITIMER_REAL, &it, NULL);
+
+  // OPTEE-DEBUG START
+  ACTF("Read finished");
+  fflush(stdout);
+  // OPTEE-DEBUG END
 
   /* If we have a four-byte "hello" message from the server, we're all set.
      Otherwise, try to figure out what went wrong. */
@@ -2566,6 +2576,10 @@ static u8 calibrate_case(char** argv, struct queue_entry* q, u8* use_mem,
   if (dumb_mode != 1 && !no_forkserver && !forksrv_pid)
     init_forkserver(argv);
 
+  // OPTEE-DEBUG START
+  ACTF("Initialized fork server");
+  fflush(stdout);
+  // OPTEE-DEBUG END
   if (q->exec_cksum) memcpy(first_trace, trace_bits, MAP_SIZE);
 
   start_us = get_cur_time_us();
@@ -2725,7 +2739,15 @@ static void perform_dry_run(char** argv) {
 
     close(fd);
 
+    // OPTEE-DEBUG START
+    ACTF("Calibrate case");
+    fflush(stdout);
+    // OPTEE-DEBUG END
     res = calibrate_case(argv, q, use_mem, 0, 1);
+    // OPTEE-DEBUG START
+    ACTF("Calibrate case finished");
+    fflush(stdout);
+    // OPTEE-DEBUG END
     ck_free(use_mem);
 
     if (stop_soon) return;
@@ -8008,7 +8030,18 @@ int main(int argc, char** argv) {
   else
     use_argv = argv + optind;
 
+  // OPTEE-DEBUG START
+  char ** argv_index = use_argv;
+  while(*argv_index) {
+    ACTF("Perform dry run with: %s", *argv_index++);
+    fflush(stdout);
+  }
+  // OPTEE-DEBUG END
   perform_dry_run(use_argv);
+  // OPTEE-DEBUG START
+  ACTF("Dry run finished");
+  fflush(stdout);
+  // OPTEE-DEBUG END
 
   cull_queue();
 
@@ -8030,6 +8063,11 @@ int main(int argc, char** argv) {
   }
 
   while (1) {
+
+    // OPTEE-DEBUG START
+    ACTF("In fuzz loop");
+    fflush(stdout);
+    // OPTEE-DEBUG END
 
     u8 skipped_fuzz;
 
