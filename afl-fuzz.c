@@ -82,6 +82,7 @@
 
 EXP_ST u8 *in_dir,                    /* Input directory with test cases  */
           *out_file,                  /* File to fuzz, if any             */
+          *out_file_coverage,         /* QEMU coverage log file           */
           *out_dir,                   /* Working & output directory       */
           *sync_dir,                  /* Synchronization directory        */
           *sync_id,                   /* Fuzzer ID                        */
@@ -2264,11 +2265,10 @@ EXP_ST void init_forkserver(char** argv) {
 
 }
 
-
 /* Execute target application, monitoring for timeouts. Return status
    information. The called program will update trace_bits[]. */
 
-static u8 run_target(char** argv, u32 timeout) {
+static u8 afl_run_target(char** argv, u32 timeout) {
 
   static struct itimerval it;
   static u32 prev_timed_out = 0;
@@ -2475,6 +2475,12 @@ static u8 run_target(char** argv, u32 timeout) {
 
 }
 
+static u8 run_target(char** argv, u32 timeout) {
+    u8 result = afl_run_target(argv, timeout);
+    // TODO: Invoke upload script with result, out_file and out_file_coverage
+    unlink(out_file_coverage);
+    return result;
+}
 
 /* Write modified data to file for testing. If out_file is set, the old file
    is unlinked and a new one is created. Otherwise, out_fd is rewound and
@@ -7241,6 +7247,9 @@ EXP_ST void setup_stdio_file(void) {
 
   ck_free(fn);
 
+  fn = alloc_printf("%s.coverage", fn);
+
+  unlink(fn); /* Ignore errors */
 }
 
 
@@ -7552,8 +7561,10 @@ EXP_ST void detect_file_args(char** argv) {
 
       /* If we don't have a file name chosen yet, use a safe default. */
 
-      if (!out_file)
+      if (!out_file) {
         out_file = alloc_printf("%s/.cur_input", out_dir);
+        out_file_coverage = alloc_printf("%s.coverage", out_file);
+      }
 
       /* Be sure that we're always using fully-qualified paths. */
 
