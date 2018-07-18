@@ -45,6 +45,7 @@
 #include <termios.h>
 #include <dlfcn.h>
 #include <sched.h>
+#include <uuid/uuid.h>
 
 #include <sys/wait.h>
 #include <sys/time.h>
@@ -2477,8 +2478,64 @@ static u8 afl_run_target(char** argv, u32 timeout) {
 
 static u8 run_target(char** argv, u32 timeout) {
     u8 result = afl_run_target(argv, timeout);
-    // TODO: Invoke upload script with result, out_file and out_file_coverage
+    // Generate UUID
+    uuid_t uuid;
+    uuid_generate(uuid);
+    char uuid_str[37];
+    uuid_unparse_lower(uuid, uuid_str);
+    // Create unique hard link for input file
+    char *target_file = malloc(strlen(out_file) + strlen(uuid_str) + 2);
+    strcpy(target_file, out_file);
+    strcat(target_file, "-");
+    strcat(target_file, uuid_str);
+    if(link(out_file, target_file) != 0) {
+     PFATAL("Unable to create '%s'", target_file);
+    }
+    // Rename coverage file to unique name
+    char *target_coverage_file = malloc(strlen(out_file_coverage) + strlen(uuid_str) + 2);
+    strcpy(target_coverage_file, out_file_coverage);
+    strcat(target_coverage_file, "-");
+    strcat(target_coverage_file, uuid_str);
+    if(link(out_file_coverage, target_coverage_file) != 0) {
+     PFATAL("Unable to create '%s'", target_coverage_file);
+    }
     unlink(out_file_coverage);
+    // Invoke upload script
+    char* args[6];
+    args[0] = "import-example";
+    switch(result) {
+      case FAULT_TMOUT:
+        args[1] = "timeout";
+        break;
+      case FAULT_CRASH:
+        args[1] = "crash";
+        break;
+      case FAULT_ERROR:
+        args[1] = "error";
+        break;
+      case FAULT_NOINST:
+        args[1] = "noinst";
+        break;
+      case FAULT_NOBITS:
+        args[1] = "nobits";
+        break;
+      default:
+        args[1] = "none";
+    }
+    args[2] = target_file;
+    args[3] = target_coverage_file;
+    args[4] = "remove";
+    args[5] = NULL;
+    signal(SIGCHLD, SIG_IGN);
+    pid_t pid = fork();
+    if(pid == 0) {
+      execvp("import-example", args);
+      PFATAL("Unable to execute import-example");
+      exit(0);
+    }
+    signal(SIGCHLD, SIG_DFL);
+    free(target_file);
+    free(target_coverage_file);
     return result;
 }
 
