@@ -2504,10 +2504,7 @@ static u8 run_target(char** argv, u32 timeout) {
     const char* result_str = alloc_printf("%s", result_string_for(result));
 
     // Create unique hard link for input file
-    char *target_file = malloc(strlen(out_file) + strlen(uuid_str) + 2);
-    strcpy(target_file, out_file);
-    strcat(target_file, "-");
-    strcat(target_file, uuid_str);
+    char *target_file = alloc_printf("%s/coverage/%s-result-%s.scase", out_dir, uuid_str, result_str);
     if(link(out_file, target_file) != 0) {
      PFATAL("Unable to create '%s'", target_file);
     }
@@ -2520,10 +2517,7 @@ static u8 run_target(char** argv, u32 timeout) {
     }
 
     // Rename coverage file to unique name
-    char *target_coverage_file = malloc(strlen(out_file_coverage) + strlen(uuid_str) + 2);
-    strcpy(target_coverage_file, out_file_coverage);
-    strcat(target_coverage_file, "-");
-    strcat(target_coverage_file, uuid_str);
+    char *target_coverage_file = alloc_printf("%s/coverage/%s-result-%s.scov", out_dir, uuid_str, result_str);
     if(link(out_file_coverage, target_coverage_file) != 0) {
      PFATAL("Unable to create '%s'", target_coverage_file);
     }
@@ -2546,8 +2540,8 @@ static u8 run_target(char** argv, u32 timeout) {
     signal(SIGCHLD, SIG_DFL);
 
     ck_free((char*) result_str);
-    free(target_file);
-    free(target_coverage_file);
+    ck_free(target_file);
+    ck_free(target_coverage_file);
     return result;
 }
 
