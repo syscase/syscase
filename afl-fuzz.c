@@ -2491,6 +2491,14 @@ static u8 run_target(char** argv, u32 timeout) {
     if(link(out_file, target_file) != 0) {
      PFATAL("Unable to create '%s'", target_file);
     }
+
+    // Create coverage file, if QEMU has not created one (assume empty path).
+    // Open will fail, if file already exists.
+    s32 fd = open(out_file_coverage, O_CREAT | O_WRONLY | O_EXCL, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+    if(fd >= 0) {
+      close(fd);
+    }
+
     // Rename coverage file to unique name
     char *target_coverage_file = malloc(strlen(out_file_coverage) + strlen(uuid_str) + 2);
     strcpy(target_coverage_file, out_file_coverage);
