@@ -7272,6 +7272,15 @@ EXP_ST void setup_dirs_fds(void) {
   if (mkdir(tmp, 0700)) PFATAL("Unable to create '%s'", tmp);
   ck_free(tmp);
 
+  /* Coverage results. */
+
+  struct stat coverage_st = {0};
+  tmp = alloc_printf("%s/coverage", out_dir);
+  if(stat(tmp, &coverage_st) == -1) {
+    if (mkdir(tmp, 0700)) PFATAL("Unable to create '%s'", tmp);
+  }
+  ck_free(tmp);
+
   /* Generally useful file descriptors. */
 
   dev_null_fd = open("/dev/null", O_RDWR);
