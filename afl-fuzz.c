@@ -2476,6 +2476,24 @@ static u8 afl_run_target(char** argv, u32 timeout) {
 
 }
 
+static const char* result_string_for(u8 result)
+{
+  switch(result) {
+    case FAULT_TMOUT:
+      return "timeout";
+    case FAULT_CRASH:
+      return "crash";
+    case FAULT_ERROR:
+      return "error";
+    case FAULT_NOINST:
+      return "noinst";
+    case FAULT_NOBITS:
+      return "nobits";
+  }
+
+  return "none";
+}
+
 static u8 run_target(char** argv, u32 timeout) {
     u8 result = afl_run_target(argv, timeout);
     // Generate UUID
@@ -2483,6 +2501,8 @@ static u8 run_target(char** argv, u32 timeout) {
     uuid_generate(uuid);
     char uuid_str[37];
     uuid_unparse_lower(uuid, uuid_str);
+    const char* result_str = alloc_printf("%s", result_string_for(result));
+
     // Create unique hard link for input file
     char *target_file = malloc(strlen(out_file) + strlen(uuid_str) + 2);
     strcpy(target_file, out_file);
@@ -2511,25 +2531,7 @@ static u8 run_target(char** argv, u32 timeout) {
     // Invoke upload script
     char* args[6];
     args[0] = "import-example";
-    switch(result) {
-      case FAULT_TMOUT:
-        args[1] = "timeout";
-        break;
-      case FAULT_CRASH:
-        args[1] = "crash";
-        break;
-      case FAULT_ERROR:
-        args[1] = "error";
-        break;
-      case FAULT_NOINST:
-        args[1] = "noinst";
-        break;
-      case FAULT_NOBITS:
-        args[1] = "nobits";
-        break;
-      default:
-        args[1] = "none";
-    }
+    args[1] = result_str;
     args[2] = target_file;
     args[3] = target_coverage_file;
     args[4] = "remove";
@@ -2542,6 +2544,8 @@ static u8 run_target(char** argv, u32 timeout) {
       exit(0);
     }
     signal(SIGCHLD, SIG_DFL);
+
+    ck_free((char*) result_str);
     free(target_file);
     free(target_coverage_file);
     return result;
