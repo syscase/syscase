@@ -2522,22 +2522,6 @@ static u8 run_target(char** argv, u32 timeout) {
      PFATAL("Unable to create '%s'", target_coverage_file);
     }
     unlink(out_file_coverage);
-    // Invoke upload script
-    char* args[6];
-    args[0] = "import-example";
-    args[1] = result_str;
-    args[2] = target_file;
-    args[3] = target_coverage_file;
-    args[4] = "remove";
-    args[5] = NULL;
-    signal(SIGCHLD, SIG_IGN);
-    pid_t pid = fork();
-    if(pid == 0) {
-      execvp("import-example", args);
-      PFATAL("Unable to execute import-example");
-      exit(0);
-    }
-    signal(SIGCHLD, SIG_DFL);
 
     ck_free((char*) result_str);
     ck_free(target_file);
