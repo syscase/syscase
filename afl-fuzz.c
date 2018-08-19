@@ -45,6 +45,8 @@
 #include <termios.h>
 #include <dlfcn.h>
 #include <sched.h>
+#include <uuid/uuid.h>
+#include <assert.h>
 
 #include <sys/wait.h>
 #include <sys/time.h>
@@ -82,6 +84,9 @@
 
 EXP_ST u8 *in_dir,                    /* Input directory with test cases  */
           *out_file,                  /* File to fuzz, if any             */
+          *out_file_coverage,         /* QEMU coverage log file           */
+          *out_file_log_secure,       /* QEMU secure log file             */
+          *out_file_log_normal,       /* QEMU normal log file             */
           *out_dir,                   /* Working & output directory       */
           *sync_dir,                  /* Synchronization directory        */
           *sync_id,                   /* Fuzzer ID                        */
@@ -2264,11 +2269,10 @@ EXP_ST void init_forkserver(char** argv) {
 
 }
 
-
 /* Execute target application, monitoring for timeouts. Return status
    information. The called program will update trace_bits[]. */
 
-static u8 run_target(char** argv, u32 timeout) {
+static u8 afl_run_target(char** argv, u32 timeout) {
 
   static struct itimerval it;
   static u32 prev_timed_out = 0;
@@ -2475,6 +2479,96 @@ static u8 run_target(char** argv, u32 timeout) {
 
 }
 
+static const char* result_string_for(u8 result)
+{
+  switch(result) {
+    case FAULT_TMOUT:
+      return "timeout";
+    case FAULT_CRASH:
+      return "crash";
+    case FAULT_ERROR:
+      return "error";
+    case FAULT_NOINST:
+      return "noinst";
+    case FAULT_NOBITS:
+      return "nobits";
+  }
+
+  return "none";
+}
+
+static void copy_file(char* source, char* target)
+{
+  s32 in_fd = open(source, O_RDONLY);
+  assert(in_fd >= 0);
+  s32 out_fd = open(target, O_WRONLY | O_CREAT | O_EXCL, 0644);
+  assert(out_fd >= 0);
+  char buf[8192];
+  ssize_t result;
+
+  while ((result = read(in_fd, &buf[0], sizeof(buf)))) {
+    assert(result > 0);
+    assert(write(out_fd, &buf[0], result) == result);
+  }
+
+  close(in_fd);
+  close(out_fd);
+}
+
+static u8 run_target(char** argv, u32 timeout) {
+    // Truncate secure log
+    if(truncate(out_file_log_secure, 0) != 0) {
+      PFATAL("Unable to truncate '%s'", out_file_log_secure);
+    }
+
+    // Truncate normal log
+    if(truncate(out_file_log_normal, 0) != 0) {
+      PFATAL("Unable to truncate '%s'", out_file_log_normal);
+    }
+
+    // Run target
+    u8 result = afl_run_target(argv, timeout);
+
+    // Generate UUID
+    uuid_t uuid;
+    uuid_generate(uuid);
+    char uuid_str[37];
+    uuid_unparse_lower(uuid, uuid_str);
+    const char* result_str = alloc_printf("%s", result_string_for(result));
+
+    // Copy log files
+    char *target_log_secure = alloc_printf("%s/coverage/%s-result-%s.secure.log", out_dir, uuid_str, result_str);
+    char *target_log_normal = alloc_printf("%s/coverage/%s-result-%s.normal.log", out_dir, uuid_str, result_str);
+    copy_file(out_file_log_secure, target_log_secure);
+    copy_file(out_file_log_normal, target_log_normal);
+
+    // Create unique hard link for input file
+    char *target_file = alloc_printf("%s/coverage/%s-result-%s.scase", out_dir, uuid_str, result_str);
+    if(link(out_file, target_file) != 0) {
+     PFATAL("Unable to create '%s'", target_file);
+    }
+
+    // Create coverage file, if QEMU has not created one (assume empty path).
+    // Open will fail, if file already exists.
+    s32 fd = open(out_file_coverage, O_CREAT | O_WRONLY | O_EXCL, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+    if(fd >= 0) {
+      close(fd);
+    }
+
+    // Rename coverage file to unique name
+    char *target_coverage_file = alloc_printf("%s/coverage/%s-result-%s.scov", out_dir, uuid_str, result_str);
+    if(link(out_file_coverage, target_coverage_file) != 0) {
+     PFATAL("Unable to create '%s'", target_coverage_file);
+    }
+    unlink(out_file_coverage);
+
+    ck_free((char*) result_str);
+    ck_free(target_log_secure);
+    ck_free(target_log_normal);
+    ck_free(target_file);
+    ck_free(target_coverage_file);
+    return result;
+}
 
 /* Write modified data to file for testing. If out_file is set, the old file
    is unlinked and a new one is created. Otherwise, out_fd is rewound and
@@ -7201,6 +7295,15 @@ EXP_ST void setup_dirs_fds(void) {
   if (mkdir(tmp, 0700)) PFATAL("Unable to create '%s'", tmp);
   ck_free(tmp);
 
+  /* Coverage results. */
+
+  struct stat coverage_st = {0};
+  tmp = alloc_printf("%s/coverage", out_dir);
+  if(stat(tmp, &coverage_st) == -1) {
+    if (mkdir(tmp, 0700)) PFATAL("Unable to create '%s'", tmp);
+  }
+  ck_free(tmp);
+
   /* Generally useful file descriptors. */
 
   dev_null_fd = open("/dev/null", O_RDWR);
@@ -7241,6 +7344,9 @@ EXP_ST void setup_stdio_file(void) {
 
   ck_free(fn);
 
+  fn = alloc_printf("%s.coverage", fn);
+
+  unlink(fn); /* Ignore errors */
 }
 
 
@@ -7552,8 +7658,12 @@ EXP_ST void detect_file_args(char** argv) {
 
       /* If we don't have a file name chosen yet, use a safe default. */
 
-      if (!out_file)
+      if (!out_file) {
         out_file = alloc_printf("%s/.cur_input", out_dir);
+        out_file_coverage = alloc_printf("%s.coverage", out_file);
+        out_file_log_secure = alloc_printf("%s/secure.log", out_dir);
+        out_file_log_normal = alloc_printf("%s/normal.log", out_dir);
+      }
 
       /* Be sure that we're always using fully-qualified paths. */
 
