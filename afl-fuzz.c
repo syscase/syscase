@@ -123,6 +123,7 @@ EXP_ST u8  skip_deterministic,        /* Skip deterministic stages?       */
            no_arith,                  /* Skip most arithmetic ops         */
            shuffle_queue,             /* Shuffle input queue?             */
            bitmap_changed = 1,        /* Time to update bitmap?           */
+           boot_rotated = 0,          /* Time to update bitmap?           */
            qemu_mode,                 /* Running in QEMU mode?            */
            skip_requested,            /* Skip request, via SIGUSR1        */
            run_over10m,               /* Run time over 10 minutes?        */
@@ -2569,6 +2570,27 @@ static void rotate_coverage_files(u8 result) {
     ck_free(target_coverage_file);
 }
 
+static void rotate_boot_coverage_files() {
+  if(boot_rotated) {
+    return;
+  }
+
+  // Create empty boot input file
+  // Open will fail, if file already exists.
+  s32 fd = open(out_file, O_CREAT | O_WRONLY | O_EXCL, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+  if(fd >= 0) {
+    close(fd);
+    // Truncate existing input file
+    if(truncate(out_file, 0) != 0) {
+      PFATAL("Unable to truncate '%s'", out_file);
+    }
+  }
+
+  // Rotate boot path and logs
+  rotate_coverage_files(FAULT_NONE_BOOT);
+  boot_rotated = 1;
+}
+
 static u8 run_target(char** argv, u32 timeout) {
     // Truncate secure log
     if(truncate(out_file_log_secure, 0) != 0) {
@@ -2700,7 +2722,7 @@ static u8 calibrate_case(char** argv, struct queue_entry* q, u8* use_mem,
   start_us = get_cur_time_us();
 
   // Rotate boot path and logs
-  rotate_coverage_files(FAULT_NONE_BOOT);
+  rotate_boot_coverage_files();
 
   for (stage_cur = 0; stage_cur < stage_max; stage_cur++) {
 
