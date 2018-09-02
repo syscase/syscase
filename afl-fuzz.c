@@ -323,7 +323,8 @@ enum {
   /* 02 */ FAULT_CRASH,
   /* 03 */ FAULT_ERROR,
   /* 04 */ FAULT_NOINST,
-  /* 05 */ FAULT_NOBITS
+  /* 05 */ FAULT_NOBITS,
+  /* 06 */ FAULT_NONE_BOOT
 };
 
 
@@ -2492,6 +2493,8 @@ static const char* result_string_for(u8 result)
       return "noinst";
     case FAULT_NOBITS:
       return "nobits";
+    case FAULT_NONE_BOOT:
+      return "boot";
   }
 
   return "none";
@@ -2515,20 +2518,7 @@ static void copy_file(char* source, char* target)
   close(out_fd);
 }
 
-static u8 run_target(char** argv, u32 timeout) {
-    // Truncate secure log
-    if(truncate(out_file_log_secure, 0) != 0) {
-      PFATAL("Unable to truncate '%s'", out_file_log_secure);
-    }
-
-    // Truncate normal log
-    if(truncate(out_file_log_normal, 0) != 0) {
-      PFATAL("Unable to truncate '%s'", out_file_log_normal);
-    }
-
-    // Run target
-    u8 result = afl_run_target(argv, timeout);
-
+static void rotate_coverage_files(u8 result) {
     // Generate UUID
     uuid_t uuid;
     uuid_generate(uuid);
@@ -2567,6 +2557,22 @@ static u8 run_target(char** argv, u32 timeout) {
     ck_free(target_log_normal);
     ck_free(target_file);
     ck_free(target_coverage_file);
+}
+
+static u8 run_target(char** argv, u32 timeout) {
+    // Truncate secure log
+    if(truncate(out_file_log_secure, 0) != 0) {
+      PFATAL("Unable to truncate '%s'", out_file_log_secure);
+    }
+
+    // Truncate normal log
+    if(truncate(out_file_log_normal, 0) != 0) {
+      PFATAL("Unable to truncate '%s'", out_file_log_normal);
+    }
+
+    // Run target
+    u8 result = afl_run_target(argv, timeout);
+    rotate_coverage_files(result);
     return result;
 }
 
@@ -2677,6 +2683,9 @@ static u8 calibrate_case(char** argv, struct queue_entry* q, u8* use_mem,
   if (q->exec_cksum) memcpy(first_trace, trace_bits, MAP_SIZE);
 
   start_us = get_cur_time_us();
+
+  // Rotate boot path and logs
+  rotate_coverage_files(FAULT_NONE_BOOT);
 
   for (stage_cur = 0; stage_cur < stage_max; stage_cur++) {
 
