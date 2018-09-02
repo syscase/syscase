@@ -87,6 +87,7 @@ EXP_ST u8 *in_dir,                    /* Input directory with test cases  */
           *out_file_coverage,         /* QEMU coverage log file           */
           *out_file_log_secure,       /* QEMU secure log file             */
           *out_file_log_normal,       /* QEMU normal log file             */
+          *out_file_log_qemu,         /* QEMU log file                    */
           *out_dir,                   /* Working & output directory       */
           *sync_dir,                  /* Synchronization directory        */
           *sync_id,                   /* Fuzzer ID                        */
@@ -2535,8 +2536,10 @@ static void rotate_coverage_files(u8 result) {
     // Copy log files
     char *target_log_secure = alloc_printf("%s/coverage/%s-%s-result-%s.secure.log", out_dir, time_str, uuid_str, result_str);
     char *target_log_normal = alloc_printf("%s/coverage/%s-%s-result-%s.normal.log", out_dir, time_str, uuid_str, result_str);
+    char *target_log_qemu = alloc_printf("%s/coverage/%s-%s-result-%s.qemu.log", out_dir, time_str, uuid_str, result_str);
     copy_file(out_file_log_secure, target_log_secure);
     copy_file(out_file_log_normal, target_log_normal);
+    copy_file(out_file_log_qemu, target_log_qemu);
 
     // Create unique hard link for input file
     char *target_file = alloc_printf("%s/coverage/%s-%s-result-%s.scase", out_dir, time_str, uuid_str, result_str);
@@ -2561,6 +2564,7 @@ static void rotate_coverage_files(u8 result) {
     ck_free((char*) result_str);
     ck_free(target_log_secure);
     ck_free(target_log_normal);
+    ck_free(target_log_qemu);
     ck_free(target_file);
     ck_free(target_coverage_file);
 }
@@ -2574,6 +2578,11 @@ static u8 run_target(char** argv, u32 timeout) {
     // Truncate normal log
     if(truncate(out_file_log_normal, 0) != 0) {
       PFATAL("Unable to truncate '%s'", out_file_log_normal);
+    }
+
+    // Truncate qemu log
+    if(truncate(out_file_log_qemu, 0) != 0) {
+      PFATAL("Unable to truncate '%s'", out_file_log_qemu);
     }
 
     // Run target
@@ -7678,6 +7687,7 @@ EXP_ST void detect_file_args(char** argv) {
         out_file_coverage = alloc_printf("%s.coverage", out_file);
         out_file_log_secure = alloc_printf("%s/secure.log", out_dir);
         out_file_log_normal = alloc_printf("%s/normal.log", out_dir);
+        out_file_log_qemu = alloc_printf("%s/qemu.log", out_dir);
       }
 
       /* Be sure that we're always using fully-qualified paths. */
