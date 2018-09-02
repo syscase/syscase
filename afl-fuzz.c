@@ -2526,14 +2526,20 @@ static void rotate_coverage_files(u8 result) {
     uuid_unparse_lower(uuid, uuid_str);
     const char* result_str = alloc_printf("%s", result_string_for(result));
 
+    // Time
+    time_t rawtime = time(NULL);
+    struct tm *timeinfo = localtime(&rawtime);
+    char time_str[64];
+    strftime(time_str, sizeof(time_str), "%Y-%m-%d-%H%M%S-%Z", timeinfo);
+
     // Copy log files
-    char *target_log_secure = alloc_printf("%s/coverage/%s-result-%s.secure.log", out_dir, uuid_str, result_str);
-    char *target_log_normal = alloc_printf("%s/coverage/%s-result-%s.normal.log", out_dir, uuid_str, result_str);
+    char *target_log_secure = alloc_printf("%s/coverage/%s-%s-result-%s.secure.log", out_dir, time_str, uuid_str, result_str);
+    char *target_log_normal = alloc_printf("%s/coverage/%s-%s-result-%s.normal.log", out_dir, time_str, uuid_str, result_str);
     copy_file(out_file_log_secure, target_log_secure);
     copy_file(out_file_log_normal, target_log_normal);
 
     // Create unique hard link for input file
-    char *target_file = alloc_printf("%s/coverage/%s-result-%s.scase", out_dir, uuid_str, result_str);
+    char *target_file = alloc_printf("%s/coverage/%s-%s-result-%s.scase", out_dir, time_str, uuid_str, result_str);
     if(link(out_file, target_file) != 0) {
      PFATAL("Unable to create '%s'", target_file);
     }
@@ -2546,7 +2552,7 @@ static void rotate_coverage_files(u8 result) {
     }
 
     // Rename coverage file to unique name
-    char *target_coverage_file = alloc_printf("%s/coverage/%s-result-%s.scov", out_dir, uuid_str, result_str);
+    char *target_coverage_file = alloc_printf("%s/coverage/%s-%s-result-%s.scov", out_dir, time_str, uuid_str, result_str);
     if(link(out_file_coverage, target_coverage_file) != 0) {
      PFATAL("Unable to create '%s'", target_coverage_file);
     }
