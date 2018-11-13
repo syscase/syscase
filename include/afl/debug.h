@@ -18,6 +18,7 @@
 #define _HAVE_DEBUG_H
 
 #include <errno.h>
+#include <stdio.h>
 
 #include "types.h"
 #include "config.h"
