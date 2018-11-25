@@ -13,6 +13,7 @@
 #include "afl/mutate/stage/flip2.h"
 #include "afl/mutate/stage/flip4.h"
 #include "afl/mutate/stage/flip8.h"
+#include "afl/mutate/stage/flip16.h"
 #include "afl/fuzz/common.h"
 #include "afl/fuzz/stages.h"
 #include "afl/queue_entry.h"
@@ -505,41 +506,14 @@ u8 fuzz_one(char** argv) {
     goto abandon_entry;
   }
 
-  /* Two walking bytes. */
   if (len < 2) {
     goto skip_bitflip;
   }
 
-  stage_name  = "bitflip 16/8";
-  stage_short = "flip16";
-  stage_cur   = 0;
-  stage_max   = len - 1;
-
-  orig_hit_cnt = new_hit_cnt;
-
-  for (i = 0; i < len - 1; i++) {
-    /* Let's consult the effector map... */
-    if (!eff_map[EFF_APOS(i)] && !eff_map[EFF_APOS(i + 1)]) {
-      stage_max--;
-      continue;
-    }
-
-    stage_cur_byte = i;
-
-    *(u16*)(out_buf + i) ^= 0xFFFF;
-
-    if (common_fuzz_stuff(argv, out_buf, len)) {
-      goto abandon_entry;
-    }
-    stage_cur++;
-
-    *(u16*)(out_buf + i) ^= 0xFFFF;
+  if(!stage_flip16(argv, &orig_hit_cnt, &new_hit_cnt, out_buf, len, eff_map)) {
+    goto abandon_entry;
   }
 
-  new_hit_cnt = queued_paths + unique_crashes;
-
-  stage_finds[STAGE_FLIP16]  += new_hit_cnt - orig_hit_cnt;
-  stage_cycles[STAGE_FLIP16] += stage_max;
 
   if (len < 4) {
     goto skip_bitflip;
