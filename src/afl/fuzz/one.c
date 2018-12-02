@@ -18,6 +18,7 @@
 #include "afl/mutate/stage/flip8.h"
 #include "afl/mutate/stage/flip16.h"
 #include "afl/mutate/stage/flip32.h"
+#include "afl/mutate/stage/arith8.h"
 #include "afl/fuzz/common.h"
 #include "afl/fuzz/stages.h"
 #include "afl/queue_entry.h"
@@ -346,66 +347,9 @@ skip_bitflip:
    * ARITHMETIC INC/DEC *
    **********************/
 
-  /* 8-bit arithmetics. */
-  stage_name  = "arith 8/8";
-  stage_short = "arith8";
-  stage_cur   = 0;
-  stage_max   = 2 * len * ARITH_MAX;
-
-  stage_val_type = STAGE_VAL_LE;
-
-  orig_hit_cnt = new_hit_cnt;
-
-  for (i = 0; i < len; i++) {
-    u8 orig = out_buf[i];
-
-    /* Let's consult the effector map... */
-    if (!eff_map[EFF_APOS(i)]) {
-      stage_max -= 2 * ARITH_MAX;
-      continue;
-    }
-
-    stage_cur_byte = i;
-
-    for (j = 1; j <= ARITH_MAX; j++) {
-      u8 r = orig ^ (orig + j);
-
-      /* Do arithmetic operations only if the result couldn't be a product
-         of a bitflip. */
-      if (!could_be_bitflip(r)) {
-        stage_cur_val = j;
-        out_buf[i] = orig + j;
-
-        if (common_fuzz_stuff(argv, out_buf, len)) {
-          goto abandon_entry;
-        }
-        stage_cur++;
-      } else {
-        stage_max--;
-      }
-
-      r =  orig ^ (orig - j);
-
-      if (!could_be_bitflip(r)) {
-        stage_cur_val = -j;
-        out_buf[i] = orig - j;
-
-        if (common_fuzz_stuff(argv, out_buf, len)) {
-          goto abandon_entry;
-        }
-        stage_cur++;
-      } else {
-        stage_max--;
-      }
-
-      out_buf[i] = orig;
-    }
+  if(!stage_arith8(argv, &orig_hit_cnt, &new_hit_cnt, out_buf, len, eff_map)) {
+    goto abandon_entry;
   }
-
-  new_hit_cnt = queued_paths + unique_crashes;
-
-  stage_finds[STAGE_ARITH8]  += new_hit_cnt - orig_hit_cnt;
-  stage_cycles[STAGE_ARITH8] += stage_max;
 
   /* 16-bit arithmetics, both endians. */
   if (len < 2) {
