@@ -25,6 +25,7 @@
 #include "afl/mutate/stage/interest16.h"
 #include "afl/mutate/stage/interest32.h"
 #include "afl/mutate/stage/user_extras_u0.h"
+#include "afl/mutate/stage/user_extras_ui.h"
 #include "afl/fuzz/common.h"
 #include "afl/fuzz/stages.h"
 #include "afl/queue_entry.h"
@@ -162,7 +163,7 @@ u32 calculate_score(struct queue_entry* q) {
    skipped or bailed out. */
 u8 fuzz_one(char** argv) {
   s32 len, fd, temp_len, i, j;
-  u8  *in_buf, *out_buf, *orig_in, *ex_tmp, *eff_map = 0;
+  u8  *in_buf, *out_buf, *orig_in, *eff_map = 0;
   u64 havoc_queued,  orig_hit_cnt, new_hit_cnt;
   u32 splice_cycle = 0, perf_score = 100, orig_perf, prev_cksum, eff_cnt = 1;
 
@@ -412,49 +413,10 @@ skip_interest:
     goto abandon_entry;
   }
 
-  /* Insertion of user-supplied extras. */
-  stage_name  = "user extras (insert)";
-  stage_short = "ext_UI";
-  stage_cur   = 0;
-  stage_max   = extras_cnt * len;
-
-  orig_hit_cnt = new_hit_cnt;
-
-  ex_tmp = ck_alloc(len + MAX_DICT_FILE);
-
-  for (i = 0; i <= len; i++) {
-    stage_cur_byte = i;
-
-    for (j = 0; j < extras_cnt; j++) {
-      if (len + extras[j].len > MAX_FILE) {
-        stage_max--; 
-        continue;
-      }
-
-      /* Insert token */
-      memcpy(ex_tmp + i, extras[j].data, extras[j].len);
-
-      /* Copy tail */
-      memcpy(ex_tmp + i + extras[j].len, out_buf + i, len - i);
-
-      if (common_fuzz_stuff(argv, ex_tmp, len + extras[j].len)) {
-        ck_free(ex_tmp);
-        goto abandon_entry;
-      }
-
-      stage_cur++;
-    }
-
-    /* Copy head */
-    ex_tmp[i] = out_buf[i];
+  if(!stage_user_extras_ui(argv, &orig_hit_cnt, &new_hit_cnt, out_buf, len, eff_map)) {
+    goto abandon_entry;
   }
 
-  ck_free(ex_tmp);
-
-  new_hit_cnt = queued_paths + unique_crashes;
-
-  stage_finds[STAGE_EXTRAS_UI]  += new_hit_cnt - orig_hit_cnt;
-  stage_cycles[STAGE_EXTRAS_UI] += stage_max;
 
 skip_user_extras:
 
