@@ -3,6 +3,7 @@
 
 #include "afl/globals.h"
 #include "afl/alloc-inl.h"
+#include "afl/debug.h"
 
 #include "afl/fuzz/common.h"
 #include "afl/fuzz/stages.h"
@@ -10,6 +11,11 @@
 #include "afl/mutate/eff.h"
 #include "afl/mutate/test/interest.h"
 #include "afl/utils/random.h"
+#include "afl/utils/buffer.h"
+
+#include <unistd.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 /* Helper to choose random block len for block operations in fuzz_one().
    Doesn't return zero, provided that max_len is > 0. */
@@ -51,9 +57,11 @@ u32 choose_block_len(u32 limit) {
 
 int stage_havoc(char** argv, u64 *orig_hit_cnt, u64 *new_hit_cnt,
     u8 *in_buf, u8 *out_buf, s32 len, u8 *eff_map, u32 splice_cycle,
-    u32 orig_perf, u32 *perf_score, u8 doing_det) {
-  s32 temp_len;
+    u32 orig_perf, u32 *perf_score, u8 doing_det, u8 *orig_in) {
+  s32 temp_len, fd;
   u64 havoc_queued;
+
+havoc_stage:
 
   stage_cur_byte = -1;
 
@@ -442,6 +450,97 @@ int stage_havoc(char** argv, u64 *orig_hit_cnt, u64 *new_hit_cnt,
     stage_finds[STAGE_SPLICE]  += *new_hit_cnt - *orig_hit_cnt;
     stage_cycles[STAGE_SPLICE] += stage_max;
   }
+
+#ifndef IGNORE_FINDS
+  /************
+   * SPLICING *
+   ************/
+
+  /* This is a last-resort strategy triggered by a full round with no findings.
+     It takes the current input file, randomly selects another input, and
+     splices them together at some offset, then relies on the havoc
+     code to mutate that blob. */
+retry_splicing:
+  if (use_splicing && splice_cycle++ < SPLICE_CYCLES &&
+      queued_paths > 1 && queue_cur->len > 1) {
+    struct queue_entry* target;
+    u32 tid, split_at;
+    u8* new_buf;
+    s32 f_diff, l_diff;
+
+    /* First of all, if we've modified in_buf for havoc, let's clean that
+       up... */
+    if (in_buf != orig_in) {
+      ck_free(in_buf);
+      in_buf = orig_in;
+      len = queue_cur->len;
+    }
+
+    /* Pick a random queue entry and seek to it. Don't splice with yourself. */
+    do {
+      tid = UR(queued_paths);
+    } while (tid == current_entry);
+
+    splicing_with = tid;
+    target = queue;
+
+    while (tid >= 100) {
+      target = target->next_100;
+      tid -= 100;
+    }
+    while (tid--) {
+      target = target->next;
+    }
+
+    /* Make sure that the target has a reasonable length. */
+    while (target && (target->len < 2 || target == queue_cur)) {
+      target = target->next;
+      splicing_with++;
+    }
+
+    if (!target) {
+      goto retry_splicing;
+    }
+
+    /* Read the testcase into a new buffer. */
+    fd = open(target->fname, O_RDONLY);
+
+    if (fd < 0) {
+      PFATAL("Unable to open '%s'", target->fname);
+    }
+
+    new_buf = ck_alloc_nozero(target->len);
+
+    ck_read(fd, new_buf, target->len, target->fname);
+
+    close(fd);
+
+    /* Find a suitable splicing location, somewhere between the first and
+       the last differing byte. Bail out if the difference is just a single
+       byte or so. */
+    locate_diffs(in_buf, new_buf, MIN(len, target->len), &f_diff, &l_diff);
+
+    if (f_diff < 0 || l_diff < 2 || f_diff == l_diff) {
+      ck_free(new_buf);
+      goto retry_splicing;
+    }
+
+    /* Split somewhere between the first and last differing byte. */
+    split_at = f_diff + UR(l_diff - f_diff);
+
+    /* Do the thing. */
+    len = target->len;
+    memcpy(new_buf, in_buf, split_at);
+    in_buf = new_buf;
+
+    ck_free(out_buf);
+    out_buf = ck_alloc_nozero(len);
+    memcpy(out_buf, in_buf, len);
+
+    goto havoc_stage;
+  }
+
+#endif /* !IGNORE_FINDS */
 
   return 1;
 }
