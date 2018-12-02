@@ -26,6 +26,7 @@
 #include "afl/mutate/stage/interest32.h"
 #include "afl/mutate/stage/user_extras_u0.h"
 #include "afl/mutate/stage/user_extras_ui.h"
+#include "afl/mutate/stage/auto_extras_a0.h"
 #include "afl/fuzz/common.h"
 #include "afl/fuzz/stages.h"
 #include "afl/queue_entry.h"
@@ -162,7 +163,7 @@ u32 calculate_score(struct queue_entry* q) {
    function is a tad too long... returns 0 if fuzzed successfully, 1 if
    skipped or bailed out. */
 u8 fuzz_one(char** argv) {
-  s32 len, fd, temp_len, i, j;
+  s32 len, fd, temp_len, i;
   u8  *in_buf, *out_buf, *orig_in, *eff_map = 0;
   u64 havoc_queued,  orig_hit_cnt, new_hit_cnt;
   u32 splice_cycle = 0, perf_score = 100, orig_perf, prev_cksum, eff_cnt = 1;
@@ -424,48 +425,9 @@ skip_user_extras:
     goto skip_extras;
   }
 
-  stage_name  = "auto extras (over)";
-  stage_short = "ext_AO";
-  stage_cur   = 0;
-  stage_max   = MIN(a_extras_cnt, USE_AUTO_EXTRAS) * len;
-
-  stage_val_type = STAGE_VAL_NONE;
-
-  orig_hit_cnt = new_hit_cnt;
-
-  for (i = 0; i < len; i++) {
-    u32 last_len = 0;
-
-    stage_cur_byte = i;
-
-    for (j = 0; j < MIN(a_extras_cnt, USE_AUTO_EXTRAS); j++) {
-      /* See the comment in the earlier code; extras are sorted by size. */
-      if (a_extras[j].len > len - i ||
-          !memcmp(a_extras[j].data, out_buf + i, a_extras[j].len) ||
-          !memchr(eff_map + EFF_APOS(i), 1, EFF_SPAN_ALEN(i, a_extras[j].len))) {
-        stage_max--;
-        continue;
-      }
-
-      last_len = a_extras[j].len;
-      memcpy(out_buf + i, a_extras[j].data, last_len);
-
-      if (common_fuzz_stuff(argv, out_buf, len)) {
-        goto abandon_entry;
-      }
-
-      stage_cur++;
-    }
-
-    /* Restore all the clobbered memory. */
-    memcpy(out_buf + i, in_buf + i, last_len);
-
+  if(!stage_auto_extras_a0(argv, &orig_hit_cnt, &new_hit_cnt, in_buf, out_buf, len, eff_map)) {
+    goto abandon_entry;
   }
-
-  new_hit_cnt = queued_paths + unique_crashes;
-
-  stage_finds[STAGE_EXTRAS_AO]  += new_hit_cnt - orig_hit_cnt;
-  stage_cycles[STAGE_EXTRAS_AO] += stage_max;
 
 skip_extras:
 
