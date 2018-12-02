@@ -5,7 +5,7 @@
 #include "afl/alloc-inl.h"
 
 #include "afl/describe.h"
-#include "afl/fuzz/one.h"
+#include "afl/mutate/test/interest.h"
 #include "afl/utils/random.h"
 
 #include <unistd.h>
