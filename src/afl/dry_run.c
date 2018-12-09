@@ -2,17 +2,17 @@
 
 #include "afl/dry_run.h"
 
-#include "afl/globals.h"
 #include "afl/alloc-inl.h"
+#include "afl/globals.h"
 
-#include <unistd.h>
-#include <sys/stat.h>
 #include <fcntl.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
+#include "afl/bitmap/coverage.h"
+#include "afl/describe.h"
 #include "afl/testcase/calibrate.h"
 #include "afl/testcase/result.h"
-#include "afl/describe.h"
-#include "afl/bitmap/coverage.h"
 
 /* Perform dry run of all test cases to confirm that the app is working as
    expected. This is done only for the initial inputs, and only once. */
@@ -23,7 +23,7 @@ void perform_dry_run(char** argv) {
 
   while (q) {
     u8* use_mem;
-    u8  res;
+    u8 res;
     s32 fd;
 
     u8* fn = strrchr(q->fname, '/') + 1;
@@ -59,7 +59,7 @@ void perform_dry_run(char** argv) {
     }
 
     if (res == crash_mode || res == FAULT_NOBITS) {
-      SAYF(cGRA "    len = %u, map size = %u, exec speed = %llu us\n" cRST, 
+      SAYF(cGRA "    len = %u, map size = %u, exec speed = %llu us\n" cRST,
            q->len, q->bitmap_size, q->exec_us);
     }
 
@@ -89,27 +89,35 @@ void perform_dry_run(char** argv) {
           }
 
           SAYF("\n" cLRD "[-] " cRST
-               "The program took more than %u ms to process one of the initial test cases.\n"
-               "    Usually, the right thing to do is to relax the -t option - or to delete it\n"
-               "    altogether and allow the fuzzer to auto-calibrate. That said, if you know\n"
-               "    what you are doing and want to simply skip the unruly test cases, append\n"
-               "    '+' at the end of the value passed to -t ('-t %u+').\n", exec_tmout,
-               exec_tmout);
+               "The program took more than %u ms to process one of the initial "
+               "test cases.\n"
+               "    Usually, the right thing to do is to relax the -t option - "
+               "or to delete it\n"
+               "    altogether and allow the fuzzer to auto-calibrate. That "
+               "said, if you know\n"
+               "    what you are doing and want to simply skip the unruly test "
+               "cases, append\n"
+               "    '+' at the end of the value passed to -t ('-t %u+').\n",
+               exec_tmout, exec_tmout);
 
           FATAL("Test case '%s' results in a timeout", fn);
         } else {
           SAYF("\n" cLRD "[-] " cRST
-               "The program took more than %u ms to process one of the initial test cases.\n"
-               "    This is bad news; raising the limit with the -t option is possible, but\n"
+               "The program took more than %u ms to process one of the initial "
+               "test cases.\n"
+               "    This is bad news; raising the limit with the -t option is "
+               "possible, but\n"
                "    will probably make the fuzzing process extremely slow.\n\n"
 
-               "    If this test case is just a fluke, the other option is to just avoid it\n"
-               "    altogether, and find one that is less of a CPU hog.\n", exec_tmout);
+               "    If this test case is just a fluke, the other option is to "
+               "just avoid it\n"
+               "    altogether, and find one that is less of a CPU hog.\n",
+               exec_tmout);
 
           FATAL("Test case '%s' results in a timeout", fn);
         }
 
-      case FAULT_CRASH:  
+      case FAULT_CRASH:
         if (crash_mode) {
           break;
         }
@@ -122,63 +130,83 @@ void perform_dry_run(char** argv) {
         }
 
         if (mem_limit) {
-
           SAYF("\n" cLRD "[-] " cRST
-               "Oops, the program crashed with one of the test cases provided. There are\n"
+               "Oops, the program crashed with one of the test cases provided. "
+               "There are\n"
                "    several possible explanations:\n\n"
 
-               "    - The test case causes known crashes under normal working conditions. If\n"
-               "      so, please remove it. The fuzzer should be seeded with interesting\n"
+               "    - The test case causes known crashes under normal working "
+               "conditions. If\n"
+               "      so, please remove it. The fuzzer should be seeded with "
+               "interesting\n"
                "      inputs - but not ones that cause an outright crash.\n\n"
 
-               "    - The current memory limit (%s) is too low for this program, causing\n"
-               "      it to die due to OOM when parsing valid files. To fix this, try\n"
-               "      bumping it up with the -m setting in the command line. If in doubt,\n"
+               "    - The current memory limit (%s) is too low for this "
+               "program, causing\n"
+               "      it to die due to OOM when parsing valid files. To fix "
+               "this, try\n"
+               "      bumping it up with the -m setting in the command line. "
+               "If in doubt,\n"
                "      try something along the lines of:\n\n"
 
 #ifdef RLIMIT_AS
-               "      ( ulimit -Sv $[%llu << 10]; /path/to/binary [...] <testcase )\n\n"
+               "      ( ulimit -Sv $[%llu << 10]; /path/to/binary [...] "
+               "<testcase )\n\n"
 #else
-               "      ( ulimit -Sd $[%llu << 10]; /path/to/binary [...] <testcase )\n\n"
+               "      ( ulimit -Sd $[%llu << 10]; /path/to/binary [...] "
+               "<testcase )\n\n"
 #endif /* ^RLIMIT_AS */
 
-               "      Tip: you can use http://jwilk.net/software/recidivm to quickly\n"
-               "      estimate the required amount of virtual memory for the binary. Also,\n"
+               "      Tip: you can use http://jwilk.net/software/recidivm to "
+               "quickly\n"
+               "      estimate the required amount of virtual memory for the "
+               "binary. Also,\n"
                "      if you are using ASAN, see %s/notes_for_asan.txt.\n\n"
 
 #ifdef __APPLE__
-  
-               "    - On MacOS X, the semantics of fork() syscalls are non-standard and may\n"
-               "      break afl-fuzz performance optimizations when running platform-specific\n"
-               "      binaries. To fix this, set AFL_NO_FORKSRV=1 in the environment.\n\n"
+
+               "    - On MacOS X, the semantics of fork() syscalls are "
+               "non-standard and may\n"
+               "      break afl-fuzz performance optimizations when running "
+               "platform-specific\n"
+               "      binaries. To fix this, set AFL_NO_FORKSRV=1 in the "
+               "environment.\n\n"
 
 #endif /* __APPLE__ */
 
-               "    - Least likely, there is a horrible bug in the fuzzer. If other options\n"
-               "      fail, poke <lcamtuf@coredump.cx> for troubleshooting tips.\n",
+               "    - Least likely, there is a horrible bug in the fuzzer. If "
+               "other options\n"
+               "      fail, poke <lcamtuf@coredump.cx> for troubleshooting "
+               "tips.\n",
                DMS(mem_limit << 20), mem_limit - 1, doc_path);
 
         } else {
-
           SAYF("\n" cLRD "[-] " cRST
-               "Oops, the program crashed with one of the test cases provided. There are\n"
+               "Oops, the program crashed with one of the test cases provided. "
+               "There are\n"
                "    several possible explanations:\n\n"
 
-               "    - The test case causes known crashes under normal working conditions. If\n"
-               "      so, please remove it. The fuzzer should be seeded with interesting\n"
+               "    - The test case causes known crashes under normal working "
+               "conditions. If\n"
+               "      so, please remove it. The fuzzer should be seeded with "
+               "interesting\n"
                "      inputs - but not ones that cause an outright crash.\n\n"
 
 #ifdef __APPLE__
-  
-               "    - On MacOS X, the semantics of fork() syscalls are non-standard and may\n"
-               "      break afl-fuzz performance optimizations when running platform-specific\n"
-               "      binaries. To fix this, set AFL_NO_FORKSRV=1 in the environment.\n\n"
+
+               "    - On MacOS X, the semantics of fork() syscalls are "
+               "non-standard and may\n"
+               "      break afl-fuzz performance optimizations when running "
+               "platform-specific\n"
+               "      binaries. To fix this, set AFL_NO_FORKSRV=1 in the "
+               "environment.\n\n"
 
 #endif /* __APPLE__ */
 
-               "    - Least likely, there is a horrible bug in the fuzzer. If other options\n"
-               "      fail, poke <lcamtuf@coredump.cx> for troubleshooting tips.\n");
-
+               "    - Least likely, there is a horrible bug in the fuzzer. If "
+               "other options\n"
+               "      fail, poke <lcamtuf@coredump.cx> for troubleshooting "
+               "tips.\n");
         }
 
         FATAL("Test case '%s' results in a crash", fn);
@@ -189,7 +217,7 @@ void perform_dry_run(char** argv) {
       case FAULT_NOINST:
         FATAL("No instrumentation detected");
 
-      case FAULT_NOBITS: 
+      case FAULT_NOBITS:
         useless_at_start++;
 
         if (!in_bitmap && !shuffle_queue) {
@@ -223,4 +251,3 @@ void perform_dry_run(char** argv) {
 
   OKF("All test cases processed.");
 }
-

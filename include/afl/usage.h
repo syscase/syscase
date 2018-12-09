@@ -4,4 +4,3 @@
 void usage(u8* argv0);
 
 #endif /* ! AFL_USAGE_H */
-

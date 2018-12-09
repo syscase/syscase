@@ -10,5 +10,4 @@ u32 next_p2(u32 val) {
     ret <<= 1;
   }
   return ret;
-} 
-
+}

@@ -6,17 +6,21 @@
 
 #include "afl/fuzz/common.h"
 #include "afl/fuzz/stages.h"
-#include "afl/mutate/flip.h"
-#include "afl/mutate/eff.h"
 #include "afl/hash.h"
+#include "afl/mutate/eff.h"
+#include "afl/mutate/flip.h"
 
-int stage_flip16(char** argv, u64 *orig_hit_cnt, u64 *new_hit_cnt,
-    u8 *out_buf, s32 len, u8 *eff_map) {
+int stage_flip16(char** argv,
+                 u64* orig_hit_cnt,
+                 u64* new_hit_cnt,
+                 u8* out_buf,
+                 s32 len,
+                 u8* eff_map) {
   /* Two walking bytes. */
-  stage_name  = "bitflip 16/8";
+  stage_name = "bitflip 16/8";
   stage_short = "flip16";
-  stage_cur   = 0;
-  stage_max   = len - 1;
+  stage_cur = 0;
+  stage_max = len - 1;
 
   *orig_hit_cnt = *new_hit_cnt;
 
@@ -41,9 +45,8 @@ int stage_flip16(char** argv, u64 *orig_hit_cnt, u64 *new_hit_cnt,
 
   *new_hit_cnt = queued_paths + unique_crashes;
 
-  stage_finds[STAGE_FLIP16]  += *new_hit_cnt - *orig_hit_cnt;
+  stage_finds[STAGE_FLIP16] += *new_hit_cnt - *orig_hit_cnt;
   stage_cycles[STAGE_FLIP16] += stage_max;
 
   return 1;
 }
-

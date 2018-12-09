@@ -8,11 +8,17 @@
 #include "afl/fuzz/stages.h"
 #include "afl/mutate/flip.h"
 
-int stage_syscase1(char** argv, u64 *orig_hit_cnt, u64 *new_hit_cnt,
-    u32 *prev_cksum, u8 *out_buf, s32 len, u8 *a_collect, u32 * a_len) {
+int stage_syscase1(char** argv,
+                   u64* orig_hit_cnt,
+                   u64* new_hit_cnt,
+                   u32* prev_cksum,
+                   u8* out_buf,
+                   s32 len,
+                   u8* a_collect,
+                   u32* a_len) {
   stage_short = "sysc1";
-  stage_max   = len << 3;
-  stage_name  = "sycase 1";
+  stage_max = len << 3;
+  stage_name = "sycase 1";
 
   stage_val_type = STAGE_VAL_NONE;
 
@@ -35,9 +41,8 @@ int stage_syscase1(char** argv, u64 *orig_hit_cnt, u64 *new_hit_cnt,
 
   *new_hit_cnt = queued_paths + unique_crashes;
 
-  stage_finds[STAGE_SYSCASE1]  += *new_hit_cnt - *orig_hit_cnt;
+  stage_finds[STAGE_SYSCASE1] += *new_hit_cnt - *orig_hit_cnt;
   stage_cycles[STAGE_SYSCASE1] += stage_max;
 
   return 1;
 }
-

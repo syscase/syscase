@@ -38,4 +38,3 @@ u8 could_be_bitflip(u32 xor_val) {
 
   return 0;
 }
-

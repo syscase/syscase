@@ -6,18 +6,23 @@
 
 #include "afl/fuzz/common.h"
 #include "afl/fuzz/stages.h"
-#include "afl/mutate/flip.h"
-#include "afl/mutate/eff.h"
 #include "afl/hash.h"
+#include "afl/mutate/eff.h"
+#include "afl/mutate/flip.h"
 
 #include <string.h>
 
-int stage_flip8(char** argv, u64 *orig_hit_cnt, u64 *new_hit_cnt,
-    u8 *out_buf, s32 len, u8 *eff_map, u32 *eff_cnt) {
+int stage_flip8(char** argv,
+                u64* orig_hit_cnt,
+                u64* new_hit_cnt,
+                u8* out_buf,
+                s32 len,
+                u8* eff_map,
+                u32* eff_cnt) {
   /* Walking byte. */
-  stage_name  = "bitflip 8/8";
+  stage_name = "bitflip 8/8";
   stage_short = "flip8";
-  stage_max   = len;
+  stage_max = len;
 
   *orig_hit_cnt = *new_hit_cnt;
 
@@ -41,8 +46,7 @@ int stage_flip8(char** argv, u64 *orig_hit_cnt, u64 *new_hit_cnt,
          without wasting time on checksums. */
       if (!dumb_mode && len >= EFF_MIN_LEN) {
         cksum = hash32(trace_bits, MAP_SIZE, HASH_CONST);
-      }
-      else {
+      } else {
         cksum = ~queue_cur->exec_cksum;
       }
 
@@ -71,9 +75,8 @@ int stage_flip8(char** argv, u64 *orig_hit_cnt, u64 *new_hit_cnt,
 
   *new_hit_cnt = queued_paths + unique_crashes;
 
-  stage_finds[STAGE_FLIP8]  += *new_hit_cnt - *orig_hit_cnt;
+  stage_finds[STAGE_FLIP8] += *new_hit_cnt - *orig_hit_cnt;
   stage_cycles[STAGE_FLIP8] += stage_max;
 
   return 1;
 }
-

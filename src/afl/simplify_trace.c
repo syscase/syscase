@@ -8,10 +8,7 @@
    and replacing it with 0x80 or 0x01 depending on whether the tuple
    is hit or not. Called on every new crash or timeout, should be
    reasonably fast. */
-static const u8 simplify_lookup[256] = {
-  [0]         = 1,
-  [1 ... 255] = 128
-};
+static const u8 simplify_lookup[256] = {[0] = 1, [1 ... 255] = 128};
 
 #ifdef __x86_64__
 

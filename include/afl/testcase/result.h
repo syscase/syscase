@@ -13,4 +13,3 @@ enum {
 };
 
 #endif /* ! AFL_TESTCASE_RESULT_H */
-

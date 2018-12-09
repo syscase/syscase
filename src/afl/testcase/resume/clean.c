@@ -1,18 +1,18 @@
 #include "afl/types.h"
 
-#include "afl/testcase/resume/clean.h"
 #include "afl/testcase/common.h"
+#include "afl/testcase/resume/clean.h"
 
-#include "afl/globals.h"
 #include "afl/alloc-inl.h"
+#include "afl/globals.h"
 
 #include "afl/utils/file.h"
 
-#include <unistd.h>
-#include <sys/stat.h>
 #include <fcntl.h>
 #include <sys/file.h>
+#include <sys/stat.h>
 #include <time.h>
+#include <unistd.h>
 
 /* Delete the temporary directory used for in-place session resume. */
 void nuke_resume_dir(void) {
@@ -65,7 +65,7 @@ dir_cleanup_failed:
    is not currently running, and if the last run time isn't too great. */
 void maybe_delete_out_dir(void) {
   FILE* f;
-  u8 *fn = alloc_printf("%s/fuzzer_stats", out_dir);
+  u8* fn = alloc_printf("%s/fuzzer_stats", out_dir);
 
   /* See if the output directory is locked. If yes, bail out. If not,
      create a lock that will persist for the lifetime of the process
@@ -77,9 +77,9 @@ void maybe_delete_out_dir(void) {
 
 #ifndef __sun
   if (flock(out_dir_fd, LOCK_EX | LOCK_NB) && errno == EWOULDBLOCK) {
-
     SAYF("\n" cLRD "[-] " cRST
-         "Looks like the job output directory is being actively used by another\n"
+         "Looks like the job output directory is being actively used by "
+         "another\n"
          "    instance of afl-fuzz. You will need to choose a different %s\n"
          "    or stop the other process first.\n",
          sync_id ? "fuzzer ID" : "output location");
@@ -92,8 +92,10 @@ void maybe_delete_out_dir(void) {
   if (f) {
     u64 start_time, last_update;
 
-    if (fscanf(f, "start_time     : %llu\n"
-                  "last_update    : %llu\n", &start_time, &last_update) != 2) {
+    if (fscanf(f,
+               "start_time     : %llu\n"
+               "last_update    : %llu\n",
+               &start_time, &last_update) != 2) {
       FATAL("Malformed data in '%s'", fn);
     }
 
@@ -102,16 +104,22 @@ void maybe_delete_out_dir(void) {
     /* Let's see how much work is at stake. */
     if (!in_place_resume && last_update - start_time > OUTPUT_GRACE * 60) {
       SAYF("\n" cLRD "[-] " cRST
-           "The job output directory already exists and contains the results of more\n"
-           "    than %u minutes worth of fuzzing. To avoid data loss, afl-fuzz will *NOT*\n"
+           "The job output directory already exists and contains the results "
+           "of more\n"
+           "    than %u minutes worth of fuzzing. To avoid data loss, afl-fuzz "
+           "will *NOT*\n"
            "    automatically delete this data for you.\n\n"
 
-           "    If you wish to start a new session, remove or rename the directory manually,\n"
-           "    or specify a different output location for this job. To resume the old\n"
-           "    session, put '-' as the input directory in the command line ('-i -') and\n"
-           "    try again.\n", OUTPUT_GRACE);
+           "    If you wish to start a new session, remove or rename the "
+           "directory manually,\n"
+           "    or specify a different output location for this job. To resume "
+           "the old\n"
+           "    session, put '-' as the input directory in the command line "
+           "('-i -') and\n"
+           "    try again.\n",
+           OUTPUT_GRACE);
 
-       FATAL("At-risk data found in '%s'", out_dir);
+      FATAL("At-risk data found in '%s'", out_dir);
     }
   }
 
@@ -209,9 +217,9 @@ void maybe_delete_out_dir(void) {
                            t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
                            t->tm_hour, t->tm_min, t->tm_sec);
 #else
-    u8* nfn = alloc_printf("%s_%04u%02u%02u%02u%02u%02u", fn,
-                           t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
-                           t->tm_hour, t->tm_min, t->tm_sec);
+    u8* nfn = alloc_printf("%s_%04u%02u%02u%02u%02u%02u", fn, t->tm_year + 1900,
+                           t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min,
+                           t->tm_sec);
 #endif /* ^!SIMPLE_FILES */
 
     rename(fn, nfn); /* Ignore errors. */
@@ -235,9 +243,9 @@ void maybe_delete_out_dir(void) {
                            t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
                            t->tm_hour, t->tm_min, t->tm_sec);
 #else
-    u8* nfn = alloc_printf("%s_%04u%02u%02u%02u%02u%02u", fn,
-                           t->tm_year + 1900, t->tm_mon + 1, t->tm_mday,
-                           t->tm_hour, t->tm_min, t->tm_sec);
+    u8* nfn = alloc_printf("%s_%04u%02u%02u%02u%02u%02u", fn, t->tm_year + 1900,
+                           t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min,
+                           t->tm_sec);
 #endif /* ^!SIMPLE_FILES */
 
     rename(fn, nfn); /* Ignore errors. */
@@ -263,7 +271,7 @@ void maybe_delete_out_dir(void) {
   ck_free(fn);
 
   if (!in_place_resume) {
-    fn  = alloc_printf("%s/fuzzer_stats", out_dir);
+    fn = alloc_printf("%s/fuzzer_stats", out_dir);
     if (unlink(fn) && errno != ENOENT) {
       goto dir_cleanup_failed;
     }
@@ -284,14 +292,17 @@ void maybe_delete_out_dir(void) {
 dir_cleanup_failed:
 
   SAYF("\n" cLRD "[-] " cRST
-       "Whoops, the fuzzer tried to reuse your output directory, but bumped into\n"
-       "    some files that shouldn't be there or that couldn't be removed - so it\n"
+       "Whoops, the fuzzer tried to reuse your output directory, but bumped "
+       "into\n"
+       "    some files that shouldn't be there or that couldn't be removed - "
+       "so it\n"
        "    decided to abort! This happened while processing this path:\n\n"
 
        "    %s\n\n"
-       "    Please examine and manually delete the files, or specify a different\n"
-       "    output location for the tool.\n", fn);
+       "    Please examine and manually delete the files, or specify a "
+       "different\n"
+       "    output location for the tool.\n",
+       fn);
 
   FATAL("Output directory cleanup failed");
 }
-

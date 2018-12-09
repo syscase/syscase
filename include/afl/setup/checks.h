@@ -5,4 +5,3 @@ void check_crash_handling(void);
 void check_cpu_governor(void);
 
 #endif /* ! AFL_SETUP_CHECKS_H */
-

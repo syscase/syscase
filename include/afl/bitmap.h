@@ -9,4 +9,3 @@ u32 count_bytes(u8* mem);
 u32 count_non_255_bytes(u8* mem);
 
 #endif /* ! AFL_BITMAP_H */
-

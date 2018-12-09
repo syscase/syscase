@@ -1,14 +1,14 @@
 #include "afl/types.h"
 
-#include "afl/globals.h"
 #include "afl/banner.h"
+#include "afl/globals.h"
 
 #include "afl/alloc-inl.h"
 
 #include <string.h>
 
-u8 *use_banner;
-u8 *sync_id;
+u8* use_banner;
+u8* sync_id;
 
 /* Trim and possibly create a banner for the run. */
 void fix_up_banner(u8* name) {
@@ -31,4 +31,3 @@ void fix_up_banner(u8* name) {
     use_banner = tmp;
   }
 }
-

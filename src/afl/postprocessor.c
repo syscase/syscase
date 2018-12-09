@@ -33,4 +33,3 @@ void setup_post(void) {
 
   OKF("Postprocessor installed successfully.");
 }
-

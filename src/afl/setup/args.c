@@ -2,8 +2,8 @@
 
 #include "afl/setup/args.h"
 
-#include "afl/globals.h"
 #include "afl/alloc-inl.h"
+#include "afl/globals.h"
 
 #include <string.h>
 
@@ -15,7 +15,7 @@ void save_cmdline(u32 argc, char** argv) {
   for (i = 0; i < argc; i++) {
     len += strlen(argv[i]) + 1;
   }
-  
+
   buf = orig_cmdline = ck_alloc(len);
 
   for (i = 0; i < argc; i++) {
@@ -31,4 +31,3 @@ void save_cmdline(u32 argc, char** argv) {
 
   *buf = 0;
 }
-

@@ -8,4 +8,3 @@ u32 calculate_score(struct queue_entry* q);
 u8 fuzz_one(char** argv);
 
 #endif /* ! AFL_FUZZ_ONE_H */
-

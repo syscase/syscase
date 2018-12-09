@@ -8,4 +8,3 @@ void bind_to_free_cpu(void);
 void get_core_count(void);
 
 #endif /* ! AFL_UTILS_CPU_H */
-

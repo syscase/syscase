@@ -2,17 +2,17 @@
 
 #include "afl/syscase/coverage.h"
 
-#include "afl/globals.h"
 #include "afl/alloc-inl.h"
+#include "afl/globals.h"
 
-#include "afl/testcase/result.h"
 #include "afl/run_target.h"
+#include "afl/testcase/result.h"
 
-#include <unistd.h>
 #include <assert.h>
-#include <uuid/uuid.h>
-#include <sys/stat.h>
 #include <fcntl.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <uuid/uuid.h>
 
 const char* result_string_for(u8 result) {
   switch (result) {
@@ -33,8 +33,7 @@ const char* result_string_for(u8 result) {
   return "none";
 }
 
-void copy_file(char* source, char* target)
-{
+void copy_file(char* source, char* target) {
   s32 in_fd = open(source, O_RDONLY);
   assert(in_fd >= 0);
   s32 out_fd = open(target, O_WRONLY | O_CREAT | O_EXCL, 0644);
@@ -61,39 +60,48 @@ void rotate_coverage_files(u8 result) {
 
   // Time
   time_t rawtime = time(NULL);
-  struct tm *timeinfo = localtime(&rawtime);
+  struct tm* timeinfo = localtime(&rawtime);
   char time_str[64];
   strftime(time_str, sizeof(time_str), "%Y-%m-%d-%H%M%S-%Z", timeinfo);
 
   // Copy log files
-  char *target_log_secure = alloc_printf("%s/coverage/%s-%s-result-%s.secure.log", out_dir, time_str, uuid_str, result_str);
-  char *target_log_normal = alloc_printf("%s/coverage/%s-%s-result-%s.normal.log", out_dir, time_str, uuid_str, result_str);
-  char *target_log_qemu = alloc_printf("%s/coverage/%s-%s-result-%s.qemu.log", out_dir, time_str, uuid_str, result_str);
+  char* target_log_secure =
+      alloc_printf("%s/coverage/%s-%s-result-%s.secure.log", out_dir, time_str,
+                   uuid_str, result_str);
+  char* target_log_normal =
+      alloc_printf("%s/coverage/%s-%s-result-%s.normal.log", out_dir, time_str,
+                   uuid_str, result_str);
+  char* target_log_qemu = alloc_printf("%s/coverage/%s-%s-result-%s.qemu.log",
+                                       out_dir, time_str, uuid_str, result_str);
   copy_file(out_file_log_secure, target_log_secure);
   copy_file(out_file_log_normal, target_log_normal);
   copy_file(out_file_log_qemu, target_log_qemu);
 
   // Create unique hard link for input file
-  char *target_file = alloc_printf("%s/coverage/%s-%s-result-%s.scase", out_dir, time_str, uuid_str, result_str);
+  char* target_file = alloc_printf("%s/coverage/%s-%s-result-%s.scase", out_dir,
+                                   time_str, uuid_str, result_str);
   if (link(out_file, target_file) != 0) {
     PFATAL("Unable to create '%s'", target_file);
   }
 
   // Create coverage file, if QEMU has not created one (assume empty path).
   // Open will fail, if file already exists.
-  s32 fd = open(out_file_coverage, O_CREAT | O_WRONLY | O_EXCL, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+  s32 fd = open(out_file_coverage, O_CREAT | O_WRONLY | O_EXCL,
+                S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
   if (fd >= 0) {
     close(fd);
   }
 
   // Rename coverage file to unique name
-  char *target_coverage_file = alloc_printf("%s/coverage/%s-%s-result-%s.scov", out_dir, time_str, uuid_str, result_str);
+  char* target_coverage_file =
+      alloc_printf("%s/coverage/%s-%s-result-%s.scov", out_dir, time_str,
+                   uuid_str, result_str);
   if (link(out_file_coverage, target_coverage_file) != 0) {
     PFATAL("Unable to create '%s'", target_coverage_file);
   }
   unlink(out_file_coverage);
 
-  ck_free((char*) result_str);
+  ck_free((char*)result_str);
   ck_free(target_log_secure);
   ck_free(target_log_normal);
   ck_free(target_log_qemu);
@@ -108,7 +116,8 @@ void rotate_boot_coverage_files() {
 
   // Create empty boot input file
   // Open will fail, if file already exists.
-  s32 fd = open(out_file, O_CREAT | O_WRONLY | O_EXCL, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+  s32 fd = open(out_file, O_CREAT | O_WRONLY | O_EXCL,
+                S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
   if (fd >= 0) {
     close(fd);
     // Truncate existing input file
@@ -147,4 +156,3 @@ u8 run_target(char** argv, u32 timeout) {
   rotate_coverage_files(result);
   return result;
 }
-

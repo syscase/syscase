@@ -2,8 +2,8 @@
 
 #include "afl/utils/random.h"
 
-#include "afl/globals.h"
 #include "afl/alloc-inl.h"
+#include "afl/globals.h"
 
 #include <unistd.h>
 
@@ -27,9 +27,8 @@ void shuffle_ptrs(void** ptrs, u32 cnt) {
   u32 i;
 
   for (i = 0; i < cnt - 2; i++) {
-
     u32 j = i + UR(cnt - i);
-    void *s = ptrs[i];
+    void* s = ptrs[i];
     ptrs[i] = ptrs[j];
     ptrs[j] = s;
   }

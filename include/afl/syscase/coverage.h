@@ -9,4 +9,3 @@ u8 run_target(char** argv, u32 timeout);
 u8 run_target(char** argv, u32 timeout);
 
 #endif /* ! AFL_SYSCASE_COVERAGE_H */
-

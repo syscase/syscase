@@ -5,11 +5,11 @@
 #include "afl/config.h"
 
 /* Interesting values, as per config.h */
-s8  interesting_8[]  = { INTERESTING_8 };
-s16 interesting_16[] = { INTERESTING_8, INTERESTING_16 };
-s32 interesting_32[] = { INTERESTING_8, INTERESTING_16, INTERESTING_32 };
+s8 interesting_8[] = {INTERESTING_8};
+s16 interesting_16[] = {INTERESTING_8, INTERESTING_16};
+s32 interesting_32[] = {INTERESTING_8, INTERESTING_16, INTERESTING_32};
 
-/* Last but not least, a similar helper to see if insertion of an 
+/* Last but not least, a similar helper to see if insertion of an
    interesting integer is redundant given the insertions done for
    shorter blen. The last param (check_le) is set if the caller
    already executed LE insertion for current blen and wants to see
@@ -25,8 +25,8 @@ u8 could_be_interest(u32 old_val, u32 new_val, u8 blen, u8 check_le) {
      produce new_val. */
   for (i = 0; i < blen; i++) {
     for (j = 0; j < sizeof(interesting_8); j++) {
-      u32 tval = (old_val & ~(0xff << (i * 8))) |
-                 (((u8)interesting_8[j]) << (i * 8));
+      u32 tval =
+          (old_val & ~(0xff << (i * 8))) | (((u8)interesting_8[j]) << (i * 8));
 
       if (new_val == tval) {
         return 1;
@@ -74,4 +74,3 @@ u8 could_be_interest(u32 old_val, u32 new_val, u8 blen, u8 check_le) {
 
   return 0;
 }
-

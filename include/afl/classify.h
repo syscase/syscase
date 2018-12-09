@@ -17,4 +17,3 @@ inline void classify_counts(u32* mem);
 #endif /* ^__x86_64__ */
 
 #endif /* ! AFL_CLASSIFY_H */
-

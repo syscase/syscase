@@ -10,12 +10,16 @@
 #include "afl/mutate/test/bitflip.h"
 
 /* 16-bit arithmetics, both endians. */
-int stage_arith16(char** argv, u64 *orig_hit_cnt, u64 *new_hit_cnt,
-    u8 *out_buf, s32 len, u8 *eff_map) {
-  stage_name  = "arith 16/8";
+int stage_arith16(char** argv,
+                  u64* orig_hit_cnt,
+                  u64* new_hit_cnt,
+                  u8* out_buf,
+                  s32 len,
+                  u8* eff_map) {
+  stage_name = "arith 16/8";
   stage_short = "arith16";
-  stage_cur   = 0;
-  stage_max   = 4 * (len - 1) * ARITH_MAX;
+  stage_cur = 0;
+  stage_max = 4 * (len - 1) * ARITH_MAX;
 
   *orig_hit_cnt = *new_hit_cnt;
 
@@ -31,16 +35,15 @@ int stage_arith16(char** argv, u64 *orig_hit_cnt, u64 *new_hit_cnt,
     stage_cur_byte = i;
 
     for (int j = 1; j <= ARITH_MAX; j++) {
-      u16 r1 = orig ^ (orig + j),
-          r2 = orig ^ (orig - j),
+      u16 r1 = orig ^ (orig + j), r2 = orig ^ (orig - j),
           r3 = orig ^ SWAP16(SWAP16(orig) + j),
           r4 = orig ^ SWAP16(SWAP16(orig) - j);
 
       /* Try little endian addition and subtraction first. Do it only
-         if the operation would affect more than one byte (hence the 
+         if the operation would affect more than one byte (hence the
          & 0xff overflow checks) and if it couldn't be a product of
          a bitflip. */
-      stage_val_type = STAGE_VAL_LE; 
+      stage_val_type = STAGE_VAL_LE;
 
       if ((orig & 0xff) + j > 0xff && !could_be_bitflip(r1)) {
         stage_cur_val = j;
@@ -100,9 +103,8 @@ int stage_arith16(char** argv, u64 *orig_hit_cnt, u64 *new_hit_cnt,
 
   *new_hit_cnt = queued_paths + unique_crashes;
 
-  stage_finds[STAGE_ARITH16]  += *new_hit_cnt - *orig_hit_cnt;
+  stage_finds[STAGE_ARITH16] += *new_hit_cnt - *orig_hit_cnt;
   stage_cycles[STAGE_ARITH16] += stage_max;
 
   return 1;
 }
-

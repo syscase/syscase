@@ -2,8 +2,8 @@
 
 #include "afl/tty.h"
 
-#include "afl/globals.h"
 #include "afl/debug.h"
+#include "afl/globals.h"
 
 #include <errno.h>
 #include <stropts.h>
@@ -21,7 +21,8 @@ void check_if_tty(void) {
 
   if (ioctl(1, TIOCGWINSZ, &ws)) {
     if (errno == ENOTTY) {
-      OKF("Looks like we're not running on a tty, so I'll be a bit less verbose.");
+      OKF("Looks like we're not running on a tty, so I'll be a bit less "
+          "verbose.");
       not_on_tty = 1;
     }
 
@@ -43,4 +44,3 @@ void check_term_size(void) {
     term_too_small = 1;
   }
 }
-

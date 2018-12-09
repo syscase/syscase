@@ -2,12 +2,12 @@
 
 #include "afl/setup/sync.h"
 
-#include "afl/globals.h"
 #include "afl/alloc-inl.h"
 #include "afl/debug.h"
+#include "afl/globals.h"
 
-#include <string.h>
 #include <ctype.h>
+#include <string.h>
 
 /* Validate and fix up out_dir and sync_dir when using -S. */
 void fix_up_sync(void) {
@@ -40,11 +40,10 @@ void fix_up_sync(void) {
   x = alloc_printf("%s/%s", out_dir, sync_id);
 
   sync_dir = out_dir;
-  out_dir  = x;
+  out_dir = x;
 
   if (!force_deterministic) {
     skip_deterministic = 1;
     use_splicing = 1;
   }
 }
-

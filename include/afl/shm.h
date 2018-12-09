@@ -5,4 +5,3 @@ void remove_shm(void);
 void setup_shm(void);
 
 #endif /* ! AFL_SHM_H */
-

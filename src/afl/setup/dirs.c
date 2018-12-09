@@ -2,16 +2,16 @@
 
 #include "afl/setup/dirs.h"
 
-#include "afl/globals.h"
 #include "afl/alloc-inl.h"
 #include "afl/debug.h"
+#include "afl/globals.h"
 
 #include "afl/testcase/resume/clean.h"
 
-#include <sys/file.h>
-#include <sys/stat.h>
 #include <fcntl.h>
 #include <string.h>
+#include <sys/file.h>
+#include <sys/stat.h>
 
 /* Prepare output directories and fds. */
 void setup_dirs_fds(void) {
@@ -21,7 +21,7 @@ void setup_dirs_fds(void) {
   ACTF("Setting up output directories...");
 
   if (sync_id && mkdir(sync_dir, 0700) && errno != EEXIST) {
-      PFATAL("Unable to create '%s'", sync_dir);
+    PFATAL("Unable to create '%s'", sync_dir);
   }
 
   if (mkdir(out_dir, 0700)) {
@@ -42,7 +42,6 @@ void setup_dirs_fds(void) {
       PFATAL("Unable to flock() output directory.");
     }
 #endif /* !__sun */
-
   }
 
   /* Queue directory for any starting & discovered paths. */
@@ -150,9 +149,9 @@ void setup_dirs_fds(void) {
     PFATAL("fdopen() failed");
   }
 
-  fprintf(plot_file, "# unix_time, cycles_done, cur_path, paths_total, "
-                     "pending_total, pending_favs, map_size, unique_crashes, "
-                     "unique_hangs, max_depth, execs_per_sec\n");
-                     /* ignore errors */
+  fprintf(plot_file,
+          "# unix_time, cycles_done, cur_path, paths_total, "
+          "pending_total, pending_favs, map_size, unique_crashes, "
+          "unique_hangs, max_depth, execs_per_sec\n");
+  /* ignore errors */
 }
-

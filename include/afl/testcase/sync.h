@@ -4,4 +4,3 @@
 void sync_fuzzers(char** argv);
 
 #endif /* ! AFL_TESTCASE_SYNC_H */
-

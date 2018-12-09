@@ -2,21 +2,25 @@
 
 #include "afl/mutate/stage/user_extras_ui.h"
 
-#include "afl/globals.h"
 #include "afl/alloc-inl.h"
+#include "afl/globals.h"
 
 #include "afl/fuzz/common.h"
 #include "afl/fuzz/stages.h"
 #include "afl/mutate/eff.h"
 
 /* Insertion of user-supplied extras. */
-int stage_user_extras_ui(char** argv, u64 *orig_hit_cnt, u64 *new_hit_cnt,
-    u8 *out_buf, s32 len, u8 *eff_map) {
-  u8 *ex_tmp;
-  stage_name  = "user extras (insert)";
+int stage_user_extras_ui(char** argv,
+                         u64* orig_hit_cnt,
+                         u64* new_hit_cnt,
+                         u8* out_buf,
+                         s32 len,
+                         u8* eff_map) {
+  u8* ex_tmp;
+  stage_name = "user extras (insert)";
   stage_short = "ext_UI";
-  stage_cur   = 0;
-  stage_max   = extras_cnt * len;
+  stage_cur = 0;
+  stage_max = extras_cnt * len;
 
   *orig_hit_cnt = *new_hit_cnt;
 
@@ -27,7 +31,7 @@ int stage_user_extras_ui(char** argv, u64 *orig_hit_cnt, u64 *new_hit_cnt,
 
     for (int j = 0; j < extras_cnt; j++) {
       if (len + extras[j].len > MAX_FILE) {
-        stage_max--; 
+        stage_max--;
         continue;
       }
 
@@ -53,9 +57,8 @@ int stage_user_extras_ui(char** argv, u64 *orig_hit_cnt, u64 *new_hit_cnt,
 
   *new_hit_cnt = queued_paths + unique_crashes;
 
-  stage_finds[STAGE_EXTRAS_UI]  += *new_hit_cnt - *orig_hit_cnt;
+  stage_finds[STAGE_EXTRAS_UI] += *new_hit_cnt - *orig_hit_cnt;
   stage_cycles[STAGE_EXTRAS_UI] += stage_max;
 
   return 1;
 }
-

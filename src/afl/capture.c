@@ -2,32 +2,32 @@
 
 #include "afl/capture.h"
 
-#include "afl/globals.h"
 #include "afl/alloc-inl.h"
 #include "afl/bitmap.h"
-#include "afl/capture/operation.h"
 #include "afl/capture/crash/readme.h"
-#include "afl/queue_entry.h"
+#include "afl/capture/operation.h"
+#include "afl/globals.h"
 #include "afl/hash.h"
-#include "afl/testcase/calibrate.h"
-#include "afl/testcase/result.h"
-#include "afl/testcase.h"
+#include "afl/queue_entry.h"
 #include "afl/simplify_trace.h"
 #include "afl/syscase/coverage.h"
+#include "afl/testcase.h"
+#include "afl/testcase/calibrate.h"
+#include "afl/testcase/result.h"
 #include "afl/utils/time.h"
 
-#include <unistd.h>
-#include <sys/stat.h>
 #include <fcntl.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 /* Check if the result of an execve() during routine fuzzing is interesting,
    save or queue the input test case for further analysis if so. Returns 1 if
    entry is saved, 0 otherwise. */
 u8 save_if_interesting(char** argv, void* mem, u32 len, u8 fault) {
-  u8  *fn = "";
-  u8  hnb;
+  u8* fn = "";
+  u8 hnb;
   s32 fd;
-  u8  keeping = 0, res;
+  u8 keeping = 0, res;
 
   if (fault == crash_mode) {
     /* Keep only if there are new bits in the map, add to queue for
@@ -37,7 +37,7 @@ u8 save_if_interesting(char** argv, void* mem, u32 len, u8 fault) {
         total_crashes++;
       }
       return 0;
-    }  
+    }
 
 #ifndef SIMPLE_FILES
     fn = alloc_printf("%s/queue/id:%06u,%s", out_dir, queued_paths,
@@ -120,11 +120,10 @@ u8 save_if_interesting(char** argv, void* mem, u32 len, u8 fault) {
       }
 
 #ifndef SIMPLE_FILES
-      fn = alloc_printf("%s/hangs/id:%06llu,%s", out_dir,
-                        unique_hangs, describe_op(0));
+      fn = alloc_printf("%s/hangs/id:%06llu,%s", out_dir, unique_hangs,
+                        describe_op(0));
 #else
-      fn = alloc_printf("%s/hangs/id_%06llu", out_dir,
-                        unique_hangs);
+      fn = alloc_printf("%s/hangs/id_%06llu", out_dir, unique_hangs);
 #endif /* ^!SIMPLE_FILES */
 
       unique_hangs++;
@@ -135,7 +134,7 @@ u8 save_if_interesting(char** argv, void* mem, u32 len, u8 fault) {
 
     case FAULT_CRASH:
 
-keep_as_crash:
+    keep_as_crash:
 
       /* This is handled in a manner roughly similar to timeouts,
          except for slightly different limits and no need to re-run test
@@ -147,7 +146,6 @@ keep_as_crash:
       }
 
       if (!dumb_mode) {
-
 #ifdef __x86_64__
         simplify_trace((u64*)trace_bits);
 #else
@@ -181,7 +179,8 @@ keep_as_crash:
     case FAULT_ERROR:
       FATAL("Unable to execute target application");
 
-    default: return keeping;
+    default:
+      return keeping;
   }
 
   /* If we're here, we apparently want to save the crash or hang
@@ -197,4 +196,3 @@ keep_as_crash:
 
   return keeping;
 }
-
