@@ -62,8 +62,10 @@ u8 calibrate_case(char** argv, struct queue_entry* q, u8* use_mem,
 
   start_us = get_cur_time_us();
 
-  // Rotate boot path and logs
-  rotate_boot_coverage_files();
+  if (coverage_mode) {
+    // Rotate boot path and logs
+    rotate_boot_coverage_files();
+  }
 
   for (stage_cur = 0; stage_cur < stage_max; stage_cur++) {
     u32 cksum;

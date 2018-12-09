@@ -18,7 +18,10 @@ void usage(u8* argv0) {
        "  -f file       - location read by the fuzzed program (stdin)\n"
        "  -t msec       - timeout for each run (auto-scaled, 50-%u ms)\n"
        "  -m megs       - memory limit for child process (%u MB)\n"
-       "  -Q            - use binary-only instrumentation (QEMU mode)\n\n"     
+       "  -Q            - use binary-only instrumentation (QEMU mode)\n\n"
+       "  -c            - coverage mode used: \n"
+       "                  0: disable writing coverage files\n"
+       "                  1: enable writing coverage files (default)\n\n"
  
        "Fuzzing behavior settings:\n\n"
 
