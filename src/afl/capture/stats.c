@@ -433,6 +433,12 @@ void show_stats(void) {
        "  imported : " cRST "%-10s " bSTG bV "\n", tmp,
        sync_id ? DI(queued_imported) : (u8*)"n/a");
 
+  SAYF(bV bSTOP "     Syscase : " cRST "%-37s " bSTG bV bSTOP "             "
+       cRST "%-10s " bSTG bV "\n", tmp, "");
+
+  sprintf(tmp, "%s/%s",
+          DI(stage_finds[STAGE_SYSCASE1]), DI(stage_cycles[STAGE_SYSCASE1]));
+
   sprintf(tmp, "%s/%s, %s/%s",
           DI(stage_finds[STAGE_HAVOC]), DI(stage_cycles[STAGE_HAVOC]),
           DI(stage_finds[STAGE_SPLICE]), DI(stage_cycles[STAGE_SPLICE]));

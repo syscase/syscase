@@ -24,6 +24,7 @@
 #include "afl/mutate/stage/user_extras_ui.h"
 #include "afl/mutate/stage/auto_extras_a0.h"
 #include "afl/mutate/stage/havoc.h"
+#include "afl/mutate/stage/syscase1.h"
 #include "afl/utils/random.h"
 
 #include <unistd.h>
@@ -394,6 +395,10 @@ havoc_stage:
   }
 
 syscase_stage:
+
+  if(!stage_syscase1(argv, &orig_hit_cnt, &new_hit_cnt, &prev_cksum, out_buf, len, a_collect, &a_len)) {
+    goto abandon_entry;
+  }
 
   ret_val = 0;
 
