@@ -56,10 +56,12 @@ u32 choose_block_len(u32 limit) {
 }
 
 int stage_havoc(char** argv, u64 *orig_hit_cnt, u64 *new_hit_cnt,
-    u8 *in_buf, u8 *out_buf, s32 len, u8 *eff_map, u32 splice_cycle,
+    u8 **orig_in_buf, u8 **orig_out_buf, s32 len, u8 *eff_map, u32 splice_cycle,
     u32 orig_perf, u32 *perf_score, u8 doing_det, u8 *orig_in) {
   s32 temp_len, fd;
   u64 havoc_queued;
+  u8 *in_buf = *orig_in_buf;
+  u8 *out_buf = *orig_out_buf;
 
 havoc_stage:
 
@@ -299,8 +301,9 @@ havoc_stage:
             memcpy(new_buf + clone_to + clone_len, out_buf + clone_to,
                    temp_len - clone_to);
 
-            ck_free(out_buf);
-            out_buf = new_buf;
+            ck_free(*orig_out_buf);
+            *orig_out_buf = new_buf;
+            out_buf = *orig_out_buf;
             temp_len += clone_len;
           }
 
@@ -409,8 +412,9 @@ havoc_stage:
             memcpy(new_buf + insert_at + extra_len, out_buf + insert_at,
                    temp_len - insert_at);
 
-            ck_free(out_buf);
-            out_buf   = new_buf;
+            ck_free(*orig_out_buf);
+            *orig_out_buf = new_buf;
+            out_buf = *orig_out_buf;
             temp_len += extra_len;
 
             break;
@@ -425,7 +429,8 @@ havoc_stage:
     /* out_buf might have been mangled a bit, so let's restore it to its
        original size and shape. */
     if (temp_len < len) {
-      out_buf = ck_realloc(out_buf, len);
+      *orig_out_buf = ck_realloc(out_buf, len);
+      out_buf = *orig_out_buf;
     }
     temp_len = len;
     memcpy(out_buf, in_buf, len);
@@ -471,8 +476,9 @@ retry_splicing:
     /* First of all, if we've modified in_buf for havoc, let's clean that
        up... */
     if (in_buf != orig_in) {
-      ck_free(in_buf);
-      in_buf = orig_in;
+      ck_free(*orig_in_buf);
+      *orig_in_buf = orig_in;
+      in_buf = *orig_in_buf;
       len = queue_cur->len;
     }
 
@@ -531,10 +537,12 @@ retry_splicing:
     /* Do the thing. */
     len = target->len;
     memcpy(new_buf, in_buf, split_at);
-    in_buf = new_buf;
+    *orig_in_buf = new_buf;
+    in_buf = *orig_in_buf;
 
-    ck_free(out_buf);
-    out_buf = ck_alloc_nozero(len);
+    ck_free(*orig_out_buf);
+    *orig_out_buf = ck_alloc_nozero(len);
+    out_buf = *orig_out_buf;
     memcpy(out_buf, in_buf, len);
 
     goto havoc_stage;

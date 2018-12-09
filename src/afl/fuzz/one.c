@@ -408,7 +408,7 @@ skip_extras:
 
 havoc_stage:
 
-  if(!stage_havoc(argv, &orig_hit_cnt, &new_hit_cnt, in_buf, out_buf, len, eff_map, splice_cycle,
+  if(!stage_havoc(argv, &orig_hit_cnt, &new_hit_cnt, &in_buf, &out_buf, len, eff_map, splice_cycle,
         orig_perf, &perf_score, doing_det, orig_in)) {
     goto abandon_entry;
   }
