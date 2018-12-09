@@ -28,6 +28,9 @@ void usage(u8* argv0) {
        "  -d            - quick & dirty mode (skips deterministic steps)\n"
        "  -n            - fuzz without instrumentation (dumb mode)\n"
        "  -x dir        - optional fuzzer dictionary (see README)\n\n"
+       "  -s            - syscase mode used: \n"
+       "                  0: run all stages (default)\n"
+       "                  1: run syscase stage only\n\n"
 
        "Other stuff:\n\n"
 
