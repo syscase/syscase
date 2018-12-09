@@ -1,5 +1,6 @@
 #define _GNU_SOURCE
 #include "afl/types.h"
+
 #include "afl/describe.h"
 
 #include <stdio.h>

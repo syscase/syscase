@@ -1,4 +1,5 @@
 #include "afl/types.h"
+
 #include "afl/utils/file.h"
 
 #include "afl/alloc-inl.h"

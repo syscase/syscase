@@ -1,4 +1,5 @@
 #include "afl/types.h"
+
 #include "afl/queue_entry.h"
 
 #include "afl/globals.h"

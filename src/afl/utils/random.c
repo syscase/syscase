@@ -1,4 +1,5 @@
 #include "afl/types.h"
+
 #include "afl/utils/random.h"
 
 #include "afl/globals.h"

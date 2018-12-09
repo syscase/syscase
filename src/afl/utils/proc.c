@@ -1,4 +1,5 @@
 #include "afl/types.h"
+
 #include "afl/utils/proc.h"
 
 #include "afl/config.h"

@@ -1,4 +1,5 @@
 #include "afl/types.h"
+
 #include "afl/mutate/test/bitflip.h"
 
 /* Helper function to see if a particular change (xor_val = old ^ new) could

@@ -1,4 +1,5 @@
 #include "afl/types.h"
+
 #include "afl/classify.h"
 
 #include "afl/config.h"

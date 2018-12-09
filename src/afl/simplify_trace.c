@@ -1,4 +1,5 @@
 #include "afl/types.h"
+
 #include "afl/simplify_trace.h"
 
 #include "afl/globals.h"

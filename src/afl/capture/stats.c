@@ -1,4 +1,5 @@
 #include "afl/types.h"
+
 #include "afl/capture/stats.h"
 
 #include "afl/globals.h"

@@ -1,4 +1,5 @@
 #include "afl/types.h"
+
 #include "afl/bitmap/favorable.h"
 
 #include "afl/globals.h"
