@@ -58,6 +58,8 @@ extern u8  skip_deterministic,        /* Skip deterministic stages?       */
            deferred_mode,             /* Deferred forkserver mode?        */
            fast_cal;                  /* Try to calibrate faster?         */
 
+extern u8  coverage_mode;             /* Coverage mode                    */
+
 extern s32 out_fd,                    /* Persistent fd for out_file       */
            dev_urandom_fd,            /* Persistent fd for /dev/urandom   */
            dev_null_fd,               /* Persistent fd for /dev/null      */
