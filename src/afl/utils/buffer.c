@@ -1,4 +1,5 @@
 #include "afl/types.h"
+
 #include "afl/utils/buffer.h"
 
 #ifndef IGNORE_FINDS

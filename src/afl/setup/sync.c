@@ -1,4 +1,5 @@
 #include "afl/types.h"
+
 #include "afl/setup/sync.h"
 
 #include "afl/globals.h"

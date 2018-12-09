@@ -1,4 +1,5 @@
 #include "afl/types.h"
+
 #include "afl/postprocessor.h"
 
 #include "afl/debug.h"

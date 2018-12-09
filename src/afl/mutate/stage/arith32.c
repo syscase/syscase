@@ -1,4 +1,5 @@
 #include "afl/types.h"
+
 #include "afl/mutate/stage/arith32.h"
 
 #include "afl/globals.h"

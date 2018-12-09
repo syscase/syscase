@@ -1,4 +1,5 @@
 #include "afl/types.h"
+
 #include "afl/bitmap/winners.h"
 
 #include "afl/globals.h"

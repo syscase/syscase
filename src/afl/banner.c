@@ -1,4 +1,5 @@
 #include "afl/types.h"
+
 #include "afl/globals.h"
 #include "afl/banner.h"
 

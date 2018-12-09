@@ -1,4 +1,5 @@
 #include "afl/types.h"
+
 #include "afl/setup/qemu.h"
 
 #include "afl/globals.h"

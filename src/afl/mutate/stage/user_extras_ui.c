@@ -1,4 +1,5 @@
 #include "afl/types.h"
+
 #include "afl/mutate/stage/user_extras_ui.h"
 
 #include "afl/globals.h"

@@ -1,4 +1,5 @@
 #include "afl/types.h"
+
 #include "afl/testcase/calibrate.h"
 
 #include "afl/globals.h"

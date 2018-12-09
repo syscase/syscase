@@ -1,4 +1,5 @@
 #include "afl/types.h"
+
 #include "afl/tty.h"
 
 #include "afl/globals.h"

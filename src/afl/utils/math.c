@@ -1,4 +1,5 @@
 #include "afl/types.h"
+
 #include "afl/utils/math.h"
 
 /* Find first power of two greater or equal to val (assuming val under

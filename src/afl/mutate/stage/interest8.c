@@ -1,4 +1,5 @@
 #include "afl/types.h"
+
 #include "afl/mutate/stage/interest8.h"
 
 #include "afl/globals.h"

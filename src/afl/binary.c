@@ -1,6 +1,7 @@
 #define _GNU_SOURCE // Required for memmem
 
 #include "afl/types.h"
+
 #include "afl/binary.h"
 
 #include "afl/globals.h"

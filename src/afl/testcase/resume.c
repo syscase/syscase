@@ -1,4 +1,5 @@
 #include "afl/types.h"
+
 #include "afl/testcase/resume.h"
 
 #include "afl/globals.h"

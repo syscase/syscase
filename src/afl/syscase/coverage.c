@@ -1,4 +1,5 @@
 #include "afl/types.h"
+
 #include "afl/syscase/coverage.h"
 
 #include "afl/globals.h"
