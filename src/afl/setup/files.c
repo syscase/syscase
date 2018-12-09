@@ -2,12 +2,12 @@
 
 #include "afl/setup/files.h"
 
-#include "afl/globals.h"
 #include "afl/alloc-inl.h"
+#include "afl/globals.h"
 
-#include <unistd.h>
-#include <sys/stat.h>
 #include <fcntl.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 /* Setup the output file for fuzzed data, if not using -f. */
 void setup_stdio_file(void) {
@@ -59,8 +59,7 @@ void detect_file_args(char** argv) {
       /* Be sure that we're always using fully-qualified paths. */
       if (out_file[0] == '/') {
         aa_subst = out_file;
-      }
-      else {
+      } else {
         aa_subst = alloc_printf("%s/%s", cwd, out_file);
       }
 
@@ -80,4 +79,3 @@ void detect_file_args(char** argv) {
 
   free(cwd); /* not tracked */
 }
-

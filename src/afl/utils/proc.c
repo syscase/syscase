@@ -11,7 +11,7 @@
 double get_runnable_processes(void) {
   static double res;
 
-#if defined(__APPLE__) || defined(__FreeBSD__) || defined (__OpenBSD__)
+#if defined(__APPLE__) || defined(__FreeBSD__) || defined(__OpenBSD__)
   /* I don't see any portable sysctl or so that would quickly give us the
      number of runnable processes; the 1-minute load average can be a
      semi-decent approximation, though. */
@@ -36,7 +36,7 @@ double get_runnable_processes(void) {
       val += atoi(tmp + 14);
     }
   }
- 
+
   fclose(f);
 
   if (!res) {
@@ -49,4 +49,3 @@ double get_runnable_processes(void) {
 
   return res;
 }
-

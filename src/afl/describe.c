@@ -3,10 +3,10 @@
 
 #include "afl/describe.h"
 
+#include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
-#include <fcntl.h>
 
 /* Describe integer. Uses 12 cyclic static buffers for return values. The value
    returned should be five characters or less for all the integers we reasonably
@@ -17,11 +17,12 @@ u8* DI(u64 val) {
 
   cur = (cur + 1) % 12;
 
-#define CHK_FORMAT(_divisor, _limit_mult, _fmt, _cast) do { \
-    if (val < (_divisor) * (_limit_mult)) { \
+#define CHK_FORMAT(_divisor, _limit_mult, _fmt, _cast)    \
+  do {                                                    \
+    if (val < (_divisor) * (_limit_mult)) {               \
       sprintf(tmp[cur], _fmt, ((_cast)val) / (_divisor)); \
-      return tmp[cur]; \
-    } \
+      return tmp[cur];                                    \
+    }                                                     \
   } while (0)
 
   /* 0-9999 */
@@ -62,7 +63,7 @@ u8* DI(u64 val) {
   return tmp[cur];
 }
 
-/* Describe float. Similar to the above, except with a single 
+/* Describe float. Similar to the above, except with a single
    static buffer. */
 u8* DF(double val) {
   static u8 tmp[16];
@@ -147,4 +148,3 @@ u8* DTD(u64 cur_ms, u64 event_ms) {
   sprintf(tmp, "%s days, %u hrs, %u min, %u sec", DI(t_d), t_h, t_m, t_s);
   return tmp;
 }
-

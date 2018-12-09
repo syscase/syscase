@@ -4,18 +4,24 @@
 
 #include "afl/globals.h"
 
+#include "afl/extras.h"
 #include "afl/fuzz/common.h"
 #include "afl/fuzz/stages.h"
-#include "afl/mutate/flip.h"
 #include "afl/hash.h"
-#include "afl/extras.h"
+#include "afl/mutate/flip.h"
 
-int stage_flip1(char** argv, u64 *orig_hit_cnt, u64 *new_hit_cnt,
-    u32 *prev_cksum, u8 *out_buf, s32 len, u8 *a_collect, u32 * a_len) {
+int stage_flip1(char** argv,
+                u64* orig_hit_cnt,
+                u64* new_hit_cnt,
+                u32* prev_cksum,
+                u8* out_buf,
+                s32 len,
+                u8* a_collect,
+                u32* a_len) {
   /* Single walking bit. */
   stage_short = "flip1";
-  stage_max   = len << 3;
-  stage_name  = "bitflip 1/1";
+  stage_max = len << 3;
+  stage_name = "bitflip 1/1";
 
   stage_val_type = STAGE_VAL_NONE;
 
@@ -48,7 +54,7 @@ int stage_flip1(char** argv, u64 *orig_hit_cnt, u64 *new_hit_cnt,
 
        We do this here, rather than as a separate stage, because it's a nice
        way to keep the operation approximately "free" (i.e., no extra execs).
-       
+
        Empirically, performing the check when flipping the least significant bit
        is advantageous, compared to doing it at the time of more disruptive
        changes, where the program flow may be affected in more violent ways.
@@ -98,9 +104,8 @@ int stage_flip1(char** argv, u64 *orig_hit_cnt, u64 *new_hit_cnt,
 
   *new_hit_cnt = queued_paths + unique_crashes;
 
-  stage_finds[STAGE_FLIP1]  += *new_hit_cnt - *orig_hit_cnt;
+  stage_finds[STAGE_FLIP1] += *new_hit_cnt - *orig_hit_cnt;
   stage_cycles[STAGE_FLIP1] += stage_max;
 
   return 1;
 }
-

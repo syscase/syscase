@@ -4,4 +4,3 @@
 void maybe_update_plot_file(double bitmap_cvg, double eps);
 
 #endif /* ! AFL_CAPTURE_PLOT_H */
-

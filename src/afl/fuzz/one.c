@@ -2,37 +2,36 @@
 
 #include "afl/fuzz/one.h"
 
-#include "afl/globals.h"
 #include "afl/alloc-inl.h"
+#include "afl/globals.h"
 
-#include "afl/testcase/result.h"
-#include "afl/testcase/calibrate.h"
 #include "afl/mutate/eff.h"
-#include "afl/mutate/stage/trim.h"
-#include "afl/mutate/stage/flip1.h"
-#include "afl/mutate/stage/flip2.h"
-#include "afl/mutate/stage/flip4.h"
-#include "afl/mutate/stage/flip8.h"
-#include "afl/mutate/stage/flip16.h"
-#include "afl/mutate/stage/flip32.h"
-#include "afl/mutate/stage/arith8.h"
 #include "afl/mutate/stage/arith16.h"
 #include "afl/mutate/stage/arith32.h"
-#include "afl/mutate/stage/interest8.h"
+#include "afl/mutate/stage/arith8.h"
+#include "afl/mutate/stage/auto_extras_a0.h"
+#include "afl/mutate/stage/flip1.h"
+#include "afl/mutate/stage/flip16.h"
+#include "afl/mutate/stage/flip2.h"
+#include "afl/mutate/stage/flip32.h"
+#include "afl/mutate/stage/flip4.h"
+#include "afl/mutate/stage/flip8.h"
+#include "afl/mutate/stage/havoc.h"
 #include "afl/mutate/stage/interest16.h"
 #include "afl/mutate/stage/interest32.h"
+#include "afl/mutate/stage/interest8.h"
+#include "afl/mutate/stage/syscase1.h"
+#include "afl/mutate/stage/trim.h"
 #include "afl/mutate/stage/user_extras_u0.h"
 #include "afl/mutate/stage/user_extras_ui.h"
-#include "afl/mutate/stage/auto_extras_a0.h"
-#include "afl/mutate/stage/havoc.h"
-#include "afl/mutate/stage/syscase1.h"
+#include "afl/testcase/calibrate.h"
+#include "afl/testcase/result.h"
 #include "afl/utils/random.h"
 
-#include <unistd.h>
+#include <fcntl.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
-#include <fcntl.h>
-
+#include <unistd.h>
 
 /* Calculate case desirability score to adjust the length of havoc fuzzing.
    A helper function for fuzz_one(). Maybe some of these constants should
@@ -120,13 +119,13 @@ u32 calculate_score(struct queue_entry* q) {
    skipped or bailed out. */
 u8 fuzz_one(char** argv) {
   s32 len, fd;
-  u8  *in_buf, *out_buf, *orig_in, *eff_map = 0;
+  u8 *in_buf, *out_buf, *orig_in, *eff_map = 0;
   u64 orig_hit_cnt, new_hit_cnt;
   u32 splice_cycle = 0, perf_score = 100, orig_perf, prev_cksum, eff_cnt = 1;
 
-  u8  ret_val = 1, doing_det = 0;
+  u8 ret_val = 1, doing_det = 0;
 
-  u8  a_collect[MAX_AUTO_EXTRA];
+  u8 a_collect[MAX_AUTO_EXTRA];
   u32 a_len = 0;
 
 #ifdef IGNORE_FINDS
@@ -217,7 +216,7 @@ u8 fuzz_one(char** argv) {
    * TRIMMING *
    ************/
   if (!syscase_mode) {
-    if(!stage_trim(argv, in_buf, &len)) {
+    if (!stage_trim(argv, in_buf, &len)) {
       goto abandon_entry;
     }
   }
@@ -248,22 +247,22 @@ u8 fuzz_one(char** argv) {
 
   doing_det = 1;
 
-
-  if(!stage_flip1(argv, &orig_hit_cnt, &new_hit_cnt, &prev_cksum, out_buf, len, a_collect, &a_len)) {
+  if (!stage_flip1(argv, &orig_hit_cnt, &new_hit_cnt, &prev_cksum, out_buf, len,
+                   a_collect, &a_len)) {
     goto abandon_entry;
   }
 
-  if(!stage_flip2(argv, &orig_hit_cnt, &new_hit_cnt, out_buf, len)) {
+  if (!stage_flip2(argv, &orig_hit_cnt, &new_hit_cnt, out_buf, len)) {
     goto abandon_entry;
   }
 
-  if(!stage_flip4(argv, &orig_hit_cnt, &new_hit_cnt, out_buf, len)) {
+  if (!stage_flip4(argv, &orig_hit_cnt, &new_hit_cnt, out_buf, len)) {
     goto abandon_entry;
   }
 
   /* Initialize effector map for the next step (see comments below). Always
      flag first and last byte as doing something. */
-  eff_map    = ck_alloc(EFF_ALEN(len));
+  eff_map = ck_alloc(EFF_ALEN(len));
   eff_map[0] = 1;
 
   if (EFF_APOS(len - 1) != 0) {
@@ -271,7 +270,8 @@ u8 fuzz_one(char** argv) {
     eff_cnt++;
   }
 
-  if(!stage_flip8(argv, &orig_hit_cnt, &new_hit_cnt, out_buf, len, eff_map, &eff_cnt)) {
+  if (!stage_flip8(argv, &orig_hit_cnt, &new_hit_cnt, out_buf, len, eff_map,
+                   &eff_cnt)) {
     goto abandon_entry;
   }
 
@@ -279,7 +279,7 @@ u8 fuzz_one(char** argv) {
     goto skip_bitflip;
   }
 
-  if(!stage_flip16(argv, &orig_hit_cnt, &new_hit_cnt, out_buf, len, eff_map)) {
+  if (!stage_flip16(argv, &orig_hit_cnt, &new_hit_cnt, out_buf, len, eff_map)) {
     goto abandon_entry;
   }
 
@@ -287,7 +287,7 @@ u8 fuzz_one(char** argv) {
     goto skip_bitflip;
   }
 
-  if(!stage_flip32(argv, &orig_hit_cnt, &new_hit_cnt, out_buf, len, eff_map)) {
+  if (!stage_flip32(argv, &orig_hit_cnt, &new_hit_cnt, out_buf, len, eff_map)) {
     goto abandon_entry;
   }
 
@@ -301,7 +301,7 @@ skip_bitflip:
    * ARITHMETIC INC/DEC *
    **********************/
 
-  if(!stage_arith8(argv, &orig_hit_cnt, &new_hit_cnt, out_buf, len, eff_map)) {
+  if (!stage_arith8(argv, &orig_hit_cnt, &new_hit_cnt, out_buf, len, eff_map)) {
     goto abandon_entry;
   }
 
@@ -309,7 +309,8 @@ skip_bitflip:
     goto skip_arith;
   }
 
-  if(!stage_arith16(argv, &orig_hit_cnt, &new_hit_cnt, out_buf, len, eff_map)) {
+  if (!stage_arith16(argv, &orig_hit_cnt, &new_hit_cnt, out_buf, len,
+                     eff_map)) {
     goto abandon_entry;
   }
 
@@ -317,7 +318,8 @@ skip_bitflip:
     goto skip_arith;
   }
 
-  if(!stage_arith32(argv, &orig_hit_cnt, &new_hit_cnt, out_buf, len, eff_map)) {
+  if (!stage_arith32(argv, &orig_hit_cnt, &new_hit_cnt, out_buf, len,
+                     eff_map)) {
     goto abandon_entry;
   }
 
@@ -327,7 +329,8 @@ skip_arith:
    * INTERESTING VALUES *
    **********************/
 
-  if(!stage_interest8(argv, &orig_hit_cnt, &new_hit_cnt, out_buf, len, eff_map)) {
+  if (!stage_interest8(argv, &orig_hit_cnt, &new_hit_cnt, out_buf, len,
+                       eff_map)) {
     goto abandon_entry;
   }
 
@@ -335,7 +338,8 @@ skip_arith:
     goto skip_interest;
   }
 
-  if(!stage_interest16(argv, &orig_hit_cnt, &new_hit_cnt, out_buf, len, eff_map)) {
+  if (!stage_interest16(argv, &orig_hit_cnt, &new_hit_cnt, out_buf, len,
+                        eff_map)) {
     goto abandon_entry;
   }
 
@@ -343,7 +347,8 @@ skip_arith:
     goto skip_interest;
   }
 
-  if(!stage_interest32(argv, &orig_hit_cnt, &new_hit_cnt, out_buf, len, eff_map)) {
+  if (!stage_interest32(argv, &orig_hit_cnt, &new_hit_cnt, out_buf, len,
+                        eff_map)) {
     goto abandon_entry;
   }
 
@@ -356,14 +361,15 @@ skip_interest:
     goto skip_user_extras;
   }
 
-  if(!stage_user_extras_u0(argv, &orig_hit_cnt, &new_hit_cnt, in_buf, out_buf, len, eff_map)) {
+  if (!stage_user_extras_u0(argv, &orig_hit_cnt, &new_hit_cnt, in_buf, out_buf,
+                            len, eff_map)) {
     goto abandon_entry;
   }
 
-  if(!stage_user_extras_ui(argv, &orig_hit_cnt, &new_hit_cnt, out_buf, len, eff_map)) {
+  if (!stage_user_extras_ui(argv, &orig_hit_cnt, &new_hit_cnt, out_buf, len,
+                            eff_map)) {
     goto abandon_entry;
   }
-
 
 skip_user_extras:
 
@@ -371,7 +377,8 @@ skip_user_extras:
     goto skip_extras;
   }
 
-  if(!stage_auto_extras_a0(argv, &orig_hit_cnt, &new_hit_cnt, in_buf, out_buf, len, eff_map)) {
+  if (!stage_auto_extras_a0(argv, &orig_hit_cnt, &new_hit_cnt, in_buf, out_buf,
+                            len, eff_map)) {
     goto abandon_entry;
   }
 
@@ -390,14 +397,16 @@ skip_extras:
 
 havoc_stage:
 
-  if(!stage_havoc(argv, &orig_hit_cnt, &new_hit_cnt, &in_buf, &out_buf, len, eff_map, splice_cycle,
-        orig_perf, &perf_score, doing_det, orig_in)) {
+  if (!stage_havoc(argv, &orig_hit_cnt, &new_hit_cnt, &in_buf, &out_buf, len,
+                   eff_map, splice_cycle, orig_perf, &perf_score, doing_det,
+                   orig_in)) {
     goto abandon_entry;
   }
 
 syscase_stage:
 
-  if(!stage_syscase1(argv, &orig_hit_cnt, &new_hit_cnt, &prev_cksum, out_buf, len, a_collect, &a_len)) {
+  if (!stage_syscase1(argv, &orig_hit_cnt, &new_hit_cnt, &prev_cksum, out_buf,
+                      len, a_collect, &a_len)) {
     goto abandon_entry;
   }
 
@@ -427,6 +436,4 @@ abandon_entry:
   return ret_val;
 
 #undef FLIP_BIT
-
 }
-

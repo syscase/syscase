@@ -8,4 +8,3 @@ void handle_resize(int sig);
 void setup_signal_handlers(void);
 
 #endif /* ! AFL_SIGNAL_H */
-

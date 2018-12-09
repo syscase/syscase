@@ -1,22 +1,22 @@
-#define _GNU_SOURCE // Required for memmem
+#define _GNU_SOURCE  // Required for memmem
 
 #include "afl/types.h"
 
 #include "afl/binary.h"
 
-#include "afl/globals.h"
 #include "afl/alloc-inl.h"
 #include "afl/debug.h"
+#include "afl/globals.h"
 
 #include <string.h>
 
-#include <unistd.h>
-#include <sys/stat.h>
 #include <sys/file.h>
 #include <sys/mman.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
-u8 *target_path;
-u8 *doc_path;
+u8* target_path;
+u8* doc_path;
 u8 qemu_mode;
 u8 dumb_mode;
 u8 uses_asan;
@@ -37,7 +37,6 @@ void check_binary(u8* fname) {
   ACTF("Validating target binary...");
 
   if (strchr(fname, '/') || !(env_path = getenv("PATH"))) {
-
     target_path = ck_strdup(fname);
     if (stat(target_path, &st) || !S_ISREG(st.st_mode) ||
         !(st.st_mode & 0111) || (f_len = st.st_size) < 4) {
@@ -85,8 +84,9 @@ void check_binary(u8* fname) {
 
   /* Check for blatant user errors. */
   if ((!strncmp(target_path, "/tmp/", 5) && !strchr(target_path + 5, '/')) ||
-      (!strncmp(target_path, "/var/tmp/", 9) && !strchr(target_path + 9, '/'))) {
-     FATAL("Please don't keep binaries in /tmp or /var/tmp");
+      (!strncmp(target_path, "/var/tmp/", 9) &&
+       !strchr(target_path + 9, '/'))) {
+    FATAL("Please don't keep binaries in /tmp or /var/tmp");
   }
 
   fd = open(target_path, O_RDONLY);
@@ -105,13 +105,19 @@ void check_binary(u8* fname) {
 
   if (f_data[0] == '#' && f_data[1] == '!') {
     SAYF("\n" cLRD "[-] " cRST
-         "Oops, the target binary looks like a shell script. Some build systems will\n"
-         "    sometimes generate shell stubs for dynamically linked programs; try static\n"
-         "    library mode (./configure --disable-shared) if that's the case.\n\n"
+         "Oops, the target binary looks like a shell script. Some build "
+         "systems will\n"
+         "    sometimes generate shell stubs for dynamically linked programs; "
+         "try static\n"
+         "    library mode (./configure --disable-shared) if that's the "
+         "case.\n\n"
 
-         "    Another possible cause is that you are actually trying to use a shell\n" 
-         "    wrapper around the fuzzed component. Invoking shell can slow down the\n" 
-         "    fuzzing process by a factor of 20x or more; it's best to write the wrapper\n"
+         "    Another possible cause is that you are actually trying to use a "
+         "shell\n"
+         "    wrapper around the fuzzed component. Invoking shell can slow "
+         "down the\n"
+         "    fuzzing process by a factor of 20x or more; it's best to write "
+         "the wrapper\n"
          "    in a compiled language instead.\n");
 
     FATAL("Program '%s' is a shell script", target_path);
@@ -129,18 +135,25 @@ void check_binary(u8* fname) {
 
   if (!qemu_mode && !dumb_mode &&
       !memmem(f_data, f_len, SHM_ENV_VAR, strlen(SHM_ENV_VAR) + 1)) {
-    SAYF("\n" cLRD "[-] " cRST
-         "Looks like the target binary is not instrumented! The fuzzer depends on\n"
-         "    compile-time instrumentation to isolate interesting test cases while\n"
-         "    mutating the input data. For more information, and for tips on how to\n"
-         "    instrument binaries, please see %s/README.\n\n"
+    SAYF(
+        "\n" cLRD "[-] " cRST
+        "Looks like the target binary is not instrumented! The fuzzer depends "
+        "on\n"
+        "    compile-time instrumentation to isolate interesting test cases "
+        "while\n"
+        "    mutating the input data. For more information, and for tips on "
+        "how to\n"
+        "    instrument binaries, please see %s/README.\n\n"
 
-         "    When source code is not available, you may be able to leverage QEMU\n"
-         "    mode support. Consult the README for tips on how to enable this.\n"
+        "    When source code is not available, you may be able to leverage "
+        "QEMU\n"
+        "    mode support. Consult the README for tips on how to enable this.\n"
 
-         "    (It is also possible to use afl-fuzz as a traditional, \"dumb\" fuzzer.\n"
-         "    For that, you can use the -n option - but expect much worse results.)\n",
-         doc_path);
+        "    (It is also possible to use afl-fuzz as a traditional, \"dumb\" "
+        "fuzzer.\n"
+        "    For that, you can use the -n option - but expect much worse "
+        "results.)\n",
+        doc_path);
 
     FATAL("No instrumentation detected");
   }
@@ -148,8 +161,10 @@ void check_binary(u8* fname) {
   if (qemu_mode &&
       memmem(f_data, f_len, SHM_ENV_VAR, strlen(SHM_ENV_VAR) + 1)) {
     SAYF("\n" cLRD "[-] " cRST
-         "This program appears to be instrumented with afl-gcc, but is being run in\n"
-         "    QEMU mode (-Q). This is probably not what you want - this setup will be\n"
+         "This program appears to be instrumented with afl-gcc, but is being "
+         "run in\n"
+         "    QEMU mode (-Q). This is probably not what you want - this setup "
+         "will be\n"
          "    slow and offer no practical benefits.\n");
 
     FATAL("Instrumentation found in -Q mode");
@@ -180,4 +195,3 @@ void check_binary(u8* fname) {
     PFATAL("unmap() failed");
   }
 }
-

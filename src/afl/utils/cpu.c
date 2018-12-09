@@ -2,8 +2,8 @@
 
 #include "afl/utils/cpu.h"
 
-#include "afl/globals.h"
 #include "afl/alloc-inl.h"
+#include "afl/globals.h"
 
 #include "afl/utils/proc.h"
 
@@ -18,7 +18,7 @@ void bind_to_free_cpu(void) {
   struct dirent* de;
   cpu_set_t c;
 
-  u8 cpu_used[4096] = { 0 };
+  u8 cpu_used[4096] = {0};
   u32 i;
 
   if (cpu_core_count < 2) {
@@ -71,11 +71,9 @@ void bind_to_free_cpu(void) {
         has_vmsize = 1;
       }
 
-      if (!strncmp(tmp, "Cpus_allowed_list:\t", 19) &&
-          !strchr(tmp, '-') && !strchr(tmp, ',') &&
-          sscanf(tmp + 19, "%u", &hval) == 1 && hval < sizeof(cpu_used) &&
-          has_vmsize) {
-
+      if (!strncmp(tmp, "Cpus_allowed_list:\t", 19) && !strchr(tmp, '-') &&
+          !strchr(tmp, ',') && sscanf(tmp + 19, "%u", &hval) == 1 &&
+          hval < sizeof(cpu_used) && has_vmsize) {
         cpu_used[hval] = 1;
         break;
       }
@@ -96,8 +94,10 @@ void bind_to_free_cpu(void) {
   if (i == cpu_core_count) {
     SAYF("\n" cLRD "[-] " cRST
          "Uh-oh, looks like all %u CPU cores on your system are allocated to\n"
-         "    other instances of afl-fuzz (or similar CPU-locked tasks). Starting\n"
-         "    another fuzzer on this machine is probably a bad plan, but if you are\n"
+         "    other instances of afl-fuzz (or similar CPU-locked tasks). "
+         "Starting\n"
+         "    another fuzzer on this machine is probably a bad plan, but if "
+         "you are\n"
          "    absolutely sure, you can set AFL_NO_AFFINITY and try again.\n",
          cpu_core_count);
 
@@ -122,7 +122,7 @@ void bind_to_free_cpu(void) {
 void get_core_count(void) {
   u32 cur_runnable = 0;
 
-#if defined(__APPLE__) || defined(__FreeBSD__) || defined (__OpenBSD__)
+#if defined(__APPLE__) || defined(__FreeBSD__) || defined(__OpenBSD__)
   size_t s = sizeof(cpu_core_count);
 
   /* On *BSD systems, we can just use a sysctl to get the number of CPUs. */
@@ -131,7 +131,7 @@ void get_core_count(void) {
     return;
   }
 #else
-  int s_name[2] = { CTL_HW, HW_NCPU };
+  int s_name[2] = {CTL_HW, HW_NCPU};
 
   if (sysctl(s_name, 2, &cpu_core_count, &s, NULL, 0) < 0) {
     return;
@@ -165,14 +165,14 @@ void get_core_count(void) {
   if (cpu_core_count > 0) {
     cur_runnable = (u32)get_runnable_processes();
 
-#if defined(__APPLE__) || defined(__FreeBSD__) || defined (__OpenBSD__)
+#if defined(__APPLE__) || defined(__FreeBSD__) || defined(__OpenBSD__)
     /* Add ourselves, since the 1-minute average doesn't include that yet. */
     cur_runnable++;
 #endif /* __APPLE__ || __FreeBSD__ || __OpenBSD__ */
 
     OKF("You have %u CPU core%s and %u runnable tasks (utilization: %0.0f%%).",
-        cpu_core_count, cpu_core_count > 1 ? "s" : "",
-        cur_runnable, cur_runnable * 100.0 / cpu_core_count);
+        cpu_core_count, cpu_core_count > 1 ? "s" : "", cur_runnable,
+        cur_runnable * 100.0 / cpu_core_count);
 
     if (cpu_core_count > 1) {
       if (cur_runnable > cpu_core_count * 1.5) {
@@ -186,4 +186,3 @@ void get_core_count(void) {
     WARNF("Unable to figure out the number of CPU cores.");
   }
 }
-

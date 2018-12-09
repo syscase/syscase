@@ -4,15 +4,14 @@
 
 #include "afl/alloc-inl.h"
 
-#include <unistd.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <sys/types.h>
 #include <dirent.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 /* Helper function: link() if possible, copy otherwise. */
 void link_or_copy(u8* old_path, u8* new_path) {
-
   s32 i = link(old_path, new_path);
   s32 sfd, dfd;
   u8* tmp;
@@ -59,9 +58,8 @@ u8 delete_files(u8* path, u8* prefix) {
   }
 
   while ((d_ent = readdir(d))) {
-    if (d_ent->d_name[0] != '.' && (!prefix ||
-        !strncmp(d_ent->d_name, prefix, strlen(prefix)))) {
-
+    if (d_ent->d_name[0] != '.' &&
+        (!prefix || !strncmp(d_ent->d_name, prefix, strlen(prefix)))) {
       u8* fname = alloc_printf("%s/%s", path, d_ent->d_name);
       if (unlink(fname)) {
         PFATAL("Unable to delete '%s'", fname);
@@ -74,4 +72,3 @@ u8 delete_files(u8* path, u8* prefix) {
 
   return !!rmdir(path);
 }
-

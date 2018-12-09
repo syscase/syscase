@@ -2,13 +2,13 @@
 
 #include "afl/mutate/stage/trim.h"
 
-#include "afl/globals.h"
 #include "afl/debug.h"
+#include "afl/globals.h"
 
-#include "afl/testcase/trim.h"
 #include "afl/testcase/result.h"
+#include "afl/testcase/trim.h"
 
-int stage_trim(char** argv, u8 *in_buf, s32 *len) {
+int stage_trim(char** argv, u8* in_buf, s32* len) {
   if (!dumb_mode && !queue_cur->trim_done) {
     u8 res = trim_case(argv, queue_cur, in_buf);
 
@@ -31,4 +31,3 @@ int stage_trim(char** argv, u8 *in_buf, s32 *len) {
 
   return 1;
 }
-

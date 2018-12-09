@@ -2,23 +2,23 @@
 
 #include "afl/testcase/trim.h"
 
-#include "afl/globals.h"
 #include "afl/alloc-inl.h"
+#include "afl/globals.h"
 
-#include "afl/queue_entry.h"
 #include "afl/bitmap/favorable.h"
+#include "afl/capture/stats.h"
+#include "afl/describe.h"
 #include "afl/hash.h"
-#include "afl/utils/math.h"
+#include "afl/queue_entry.h"
+#include "afl/syscase/coverage.h"
 #include "afl/testcase.h"
 #include "afl/testcase/result.h"
-#include "afl/describe.h"
-#include "afl/capture/stats.h"
-#include "afl/syscase/coverage.h"
+#include "afl/utils/math.h"
 
-#include <unistd.h>
+#include <fcntl.h>
 #include <string.h>
 #include <sys/stat.h>
-#include <fcntl.h>
+#include <unistd.h>
 
 /* Trim all new test cases to save cycles when doing deterministic checks. The
    trimmer uses power-of-two increments somewhere between 1/16 and 1/1024 of
@@ -27,7 +27,7 @@ u8 trim_case(char** argv, struct queue_entry* q, u8* in_buf) {
   static u8 tmp[64];
   static u8 clean_trace[MAP_SIZE];
 
-  u8  needs_write = 0, fault = 0;
+  u8 needs_write = 0, fault = 0;
   u32 trim_exec = 0;
   u32 remove_len;
   u32 len_p2;
@@ -50,7 +50,6 @@ u8 trim_case(char** argv, struct queue_entry* q, u8* in_buf) {
   /* Continue until the number of steps gets too high or the stepover
      gets too small. */
   while (remove_len >= MAX(len_p2 / TRIM_END_STEPS, TRIM_MIN_BYTES)) {
-
     u32 remove_pos = remove_len;
 
     sprintf(tmp, "trim %s/%s", DI(remove_len), DI(remove_len));
@@ -82,9 +81,9 @@ u8 trim_case(char** argv, struct queue_entry* q, u8* in_buf) {
         u32 move_tail = q->len - remove_pos - trim_avail;
 
         q->len -= trim_avail;
-        len_p2  = next_p2(q->len);
+        len_p2 = next_p2(q->len);
 
-        memmove(in_buf + remove_pos, in_buf + remove_pos + trim_avail, 
+        memmove(in_buf + remove_pos, in_buf + remove_pos + trim_avail,
                 move_tail);
 
         /* Let's save a clean trace, which will be needed by
@@ -132,4 +131,3 @@ abort_trimming:
   bytes_trim_out += q->len;
   return fault;
 }
-

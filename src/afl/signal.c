@@ -8,7 +8,7 @@
 
 /* Handle stop signal (Ctrl-C, etc). */
 void handle_stop_sig(int sig) {
-  stop_soon = 1; 
+  stop_soon = 1;
 
   if (child_pid > 0) {
     kill(child_pid, SIGKILL);
@@ -26,10 +26,10 @@ void handle_skipreq(int sig) {
 /* Handle timeout (SIGALRM). */
 void handle_timeout(int sig) {
   if (child_pid > 0) {
-    child_timed_out = 1; 
+    child_timed_out = 1;
     kill(child_pid, SIGKILL);
   } else if (child_pid == -1 && forksrv_pid > 0) {
-    child_timed_out = 1; 
+    child_timed_out = 1;
     kill(forksrv_pid, SIGKILL);
   }
 }
@@ -45,8 +45,8 @@ void handle_resize(int sig) {
 void setup_signal_handlers(void) {
   struct sigaction sa;
 
-  sa.sa_handler   = NULL;
-  sa.sa_flags     = SA_RESTART;
+  sa.sa_handler = NULL;
+  sa.sa_flags = SA_RESTART;
   sa.sa_sigaction = NULL;
 
   sigemptyset(&sa.sa_mask);
@@ -74,4 +74,3 @@ void setup_signal_handlers(void) {
   sigaction(SIGTSTP, &sa, NULL);
   sigaction(SIGPIPE, &sa, NULL);
 }
-

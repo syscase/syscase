@@ -6,4 +6,3 @@
 u8 trim_case(char** argv, struct queue_entry* q, u8* in_buf);
 
 #endif /* ! AFL_TESTCASE_TRIM_H */
-

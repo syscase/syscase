@@ -1,22 +1,22 @@
 #include "afl/types.h"
 
-#include "afl/testcase/sync.h"
 #include "afl/testcase/common.h"
+#include "afl/testcase/sync.h"
 
-#include "afl/globals.h"
 #include "afl/alloc-inl.h"
+#include "afl/globals.h"
 
-#include "afl/testcase.h"
 #include "afl/capture.h"
 #include "afl/capture/stats.h"
 #include "afl/syscase/coverage.h"
+#include "afl/testcase.h"
 
-#include <unistd.h>
-#include <sys/types.h>
 #include <dirent.h>
-#include <sys/stat.h>
 #include <fcntl.h>
 #include <sys/mman.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 /* Grab interesting test cases from other fuzzers. */
 void sync_fuzzers(char** argv) {
@@ -32,7 +32,8 @@ void sync_fuzzers(char** argv) {
   stage_max = stage_cur = 0;
   cur_depth = 0;
 
-  /* Look at the entries created for every other fuzzer in the sync directory. */
+  /* Look at the entries created for every other fuzzer in the sync directory.
+   */
   while ((sd_ent = readdir(sd))) {
     static u8 stage_tmp[128];
 
@@ -71,21 +72,21 @@ void sync_fuzzers(char** argv) {
 
     next_min_accept = min_accept;
 
-    /* Show stats */    
+    /* Show stats */
     sprintf(stage_tmp, "sync %u", ++sync_cnt);
     stage_name = stage_tmp;
-    stage_cur  = 0;
-    stage_max  = 0;
+    stage_cur = 0;
+    stage_max = 0;
 
-    /* For every file queued by this fuzzer, parse ID and see if we have looked at
-       it before; exec a test case if not. */
+    /* For every file queued by this fuzzer, parse ID and see if we have looked
+       at it before; exec a test case if not. */
     while ((qd_ent = readdir(qd))) {
       u8* path;
       s32 fd;
       struct stat st;
 
       if (qd_ent->d_name[0] == '.' ||
-          sscanf(qd_ent->d_name, CASE_PREFIX "%06u", &syncing_case) != 1 || 
+          sscanf(qd_ent->d_name, CASE_PREFIX "%06u", &syncing_case) != 1 ||
           syncing_case < min_accept) {
         continue;
       }
@@ -101,8 +102,8 @@ void sync_fuzzers(char** argv) {
       fd = open(path, O_RDONLY);
 
       if (fd < 0) {
-         ck_free(path);
-         continue;
+        ck_free(path);
+        continue;
       }
 
       if (fstat(fd, &st)) {
@@ -111,7 +112,7 @@ void sync_fuzzers(char** argv) {
 
       /* Ignore zero-sized or oversized files. */
       if (st.st_size && st.st_size <= MAX_FILE) {
-        u8  fault;
+        u8 fault;
         u8* mem = mmap(0, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
 
         if (mem == MAP_FAILED) {
@@ -149,8 +150,7 @@ void sync_fuzzers(char** argv) {
     closedir(qd);
     ck_free(qd_path);
     ck_free(qd_synced_path);
-  }  
+  }
 
   closedir(sd);
 }
-

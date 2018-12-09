@@ -4,4 +4,3 @@
 void pivot_inputs(void);
 
 #endif /* ! AFL_TESTCASE_ROTATE_H */
-

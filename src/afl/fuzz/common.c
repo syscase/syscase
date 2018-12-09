@@ -4,12 +4,12 @@
 
 #include "afl/globals.h"
 
-#include "afl/postprocessor.h"
-#include "afl/testcase.h"
-#include "afl/testcase/result.h"
 #include "afl/capture.h"
 #include "afl/capture/stats.h"
+#include "afl/postprocessor.h"
 #include "afl/syscase/coverage.h"
+#include "afl/testcase.h"
+#include "afl/testcase/result.h"
 
 /* Write a modified test case, run program, process results. Handle
    error conditions, returning 1 if it's time to bail out. This is
@@ -45,9 +45,9 @@ u8 common_fuzz_stuff(char** argv, u8* out_buf, u32 len) {
   /* Users can hit us with SIGUSR1 to request the current input
      to be abandoned. */
   if (skip_requested) {
-     skip_requested = 0;
-     cur_skipped_paths++;
-     return 1;
+    skip_requested = 0;
+    cur_skipped_paths++;
+    return 1;
   }
 
   /* This handles FAULT_ERROR for us: */
@@ -59,4 +59,3 @@ u8 common_fuzz_stuff(char** argv, u8* out_buf, u32 len) {
 
   return 0;
 }
-

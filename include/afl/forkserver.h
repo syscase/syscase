@@ -4,4 +4,3 @@
 void init_forkserver(char** argv);
 
 #endif /* ! AFL_FORKSERVER_H */
-

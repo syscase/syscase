@@ -6,4 +6,3 @@
 void update_bitmap_score(struct queue_entry* q);
 
 #endif /* ! AFL_BITMAP_FAVORABLE_H */
-

@@ -2,18 +2,18 @@
 
 #include "afl/run_target.h"
 
-#include "afl/globals.h"
 #include "afl/debug.h"
+#include "afl/globals.h"
 
 #include "afl/classify.h"
 #include "afl/testcase/result.h"
 
 #include <string.h>
-#include <sys/types.h>
-#include <unistd.h>
 #include <sys/resource.h>
 #include <sys/time.h>
+#include <sys/types.h>
 #include <sys/wait.h>
+#include <unistd.h>
 
 /* Execute target application, monitoring for timeouts. Return status
    information. The called program will update trace_bits[]. */
@@ -34,7 +34,7 @@ u8 afl_run_target(char** argv, u32 timeout) {
 
   /* If we're running in "dumb" mode, we can't rely on the fork server
      logic compiled into the target program, so we will just keep calling
-     execve(). There is a bit of code duplication between here and 
+     execve(). There is a bit of code duplication between here and
      init_forkserver(), but c'est la vie. */
   if (dumb_mode == 1 || no_forkserver) {
     child_pid = fork();
@@ -54,12 +54,11 @@ u8 afl_run_target(char** argv, u32 timeout) {
 #else
         setrlimit(RLIMIT_DATA, &r); /* Ignore errors */
 #endif /* ^RLIMIT_AS */
-
       }
 
       r.rlim_max = r.rlim_cur = 0;
 
-      //XXX setrlimit(RLIMIT_CORE, &r); /* Ignore errors */
+      // XXX setrlimit(RLIMIT_CORE, &r); /* Ignore errors */
 
       /* Isolate the process and configure standard descriptors. If out_file is
          specified, stdin is /dev/null; otherwise, out_fd is cloned instead. */
@@ -82,10 +81,12 @@ u8 afl_run_target(char** argv, u32 timeout) {
       close(fileno(plot_file));
 
       /* Set sane defaults for ASAN if nothing else specified. */
-      setenv("ASAN_OPTIONS", "abort_on_error=1:"
-                             "detect_leaks=0:"
-                             "symbolize=0:"
-                             "allocator_may_return_null=1", 0);
+      setenv("ASAN_OPTIONS",
+             "abort_on_error=1:"
+             "detect_leaks=0:"
+             "symbolize=0:"
+             "allocator_may_return_null=1",
+             0);
 
       setenv("MSAN_OPTIONS", "exit_code=" STRINGIFY(MSAN_ERROR) ":"
                              "symbolize=0:"
@@ -108,7 +109,6 @@ u8 afl_run_target(char** argv, u32 timeout) {
         return 0;
       }
       RPFATAL(res, "Unable to request new process from fork server (OOM?)");
-
     }
 
     if ((res = read(fsrv_st_fd, &child_pid, 4)) != 4) {
@@ -123,7 +123,8 @@ u8 afl_run_target(char** argv, u32 timeout) {
     }
   }
 
-  /* Configure timeout, as requested by user, then wait for child to terminate. */
+  /* Configure timeout, as requested by user, then wait for child to terminate.
+   */
   it.it_value.tv_sec = (timeout / 1000);
   it.it_value.tv_usec = (timeout % 1000) * 1000;
 
@@ -173,7 +174,6 @@ u8 afl_run_target(char** argv, u32 timeout) {
 
   /* Report outcome to caller. */
   if (WIFSIGNALED(status) && !stop_soon) {
-
     kill_signal = WTERMSIG(status);
 
     if (child_timed_out && kill_signal == SIGKILL) {
@@ -191,7 +191,7 @@ u8 afl_run_target(char** argv, u32 timeout) {
   }
 
   /* treat all non-zero return values from qemu system test as a crash */
-  if(qemu_mode > 1 && WEXITSTATUS(status) != 0) {
+  if (qemu_mode > 1 && WEXITSTATUS(status) != 0) {
     return FAULT_CRASH;
   }
 
@@ -201,4 +201,3 @@ u8 afl_run_target(char** argv, u32 timeout) {
 
   return FAULT_NONE;
 }
-

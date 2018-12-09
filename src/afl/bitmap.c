@@ -2,12 +2,12 @@
 
 #include "afl/bitmap.h"
 
-#include "afl/globals.h"
 #include "afl/alloc-inl.h"
+#include "afl/globals.h"
 
-#include <unistd.h>
-#include <sys/stat.h>
 #include <fcntl.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 /* Write bitmap to file. The bitmap is useful mostly for the secret
    -B option, to focus a separate fuzzing session on a particular
@@ -50,30 +50,29 @@ void read_bitmap(u8* fname) {
 
 /* Check if the current execution path brings anything new to the table.
    Update virgin bits to reflect the finds. Returns 1 if the only change is
-   the hit-count for a particular tuple; 2 if there are new tuples seen. 
+   the hit-count for a particular tuple; 2 if there are new tuples seen.
    Updates the map, so subsequent calls will always return 0.
 
    This function is called after every exec() on a fairly large buffer, so
    it needs to be fast. We do this in 32-bit and 64-bit flavors. */
 inline u8 has_new_bits(u8* virgin_map) {
-
 #ifdef __x86_64__
 
   u64* current = (u64*)trace_bits;
-  u64* virgin  = (u64*)virgin_map;
+  u64* virgin = (u64*)virgin_map;
 
-  u32  i = (MAP_SIZE >> 3);
+  u32 i = (MAP_SIZE >> 3);
 
 #else
 
   u32* current = (u32*)trace_bits;
-  u32* virgin  = (u32*)virgin_map;
+  u32* virgin = (u32*)virgin_map;
 
-  u32  i = (MAP_SIZE >> 2);
+  u32 i = (MAP_SIZE >> 2);
 
 #endif /* ^__x86_64__ */
 
-  u8   ret = 0;
+  u8 ret = 0;
 
   while (i--) {
     /* Optimize for (*current & *virgin) == 0 - i.e., no bits in current bitmap
@@ -107,16 +106,13 @@ inline u8 has_new_bits(u8* virgin_map) {
         }
 
 #endif /* ^__x86_64__ */
-
       }
 
       *virgin &= ~*current;
-
     }
 
     current++;
     virgin++;
-
   }
 
   if (ret && virgin_map == virgin_bits) {
@@ -130,8 +126,8 @@ inline u8 has_new_bits(u8* virgin_map) {
    screen several times every second, does not have to be fast. */
 u32 count_bits(u8* mem) {
   u32* ptr = (u32*)mem;
-  u32  i   = (MAP_SIZE >> 2);
-  u32  ret = 0;
+  u32 i = (MAP_SIZE >> 2);
+  u32 ret = 0;
 
   while (i--) {
     u32 v = *(ptr++);
@@ -151,15 +147,15 @@ u32 count_bits(u8* mem) {
   return ret;
 }
 
-#define FF(_b)  (0xff << ((_b) << 3))
+#define FF(_b) (0xff << ((_b) << 3))
 
 /* Count the number of bytes set in the bitmap. Called fairly sporadically,
    mostly to update the status screen or calibrate and examine confirmed
    new paths. */
 u32 count_bytes(u8* mem) {
   u32* ptr = (u32*)mem;
-  u32  i   = (MAP_SIZE >> 2);
-  u32  ret = 0;
+  u32 i = (MAP_SIZE >> 2);
+  u32 ret = 0;
 
   while (i--) {
     u32 v = *(ptr++);
@@ -189,8 +185,8 @@ u32 count_bytes(u8* mem) {
    status screen, several calls per second or so. */
 u32 count_non_255_bytes(u8* mem) {
   u32* ptr = (u32*)mem;
-  u32  i   = (MAP_SIZE >> 2);
-  u32  ret = 0;
+  u32 i = (MAP_SIZE >> 2);
+  u32 ret = 0;
 
   while (i--) {
     u32 v = *(ptr++);
@@ -216,4 +212,3 @@ u32 count_non_255_bytes(u8* mem) {
 
   return ret;
 }
-

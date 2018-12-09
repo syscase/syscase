@@ -7,4 +7,3 @@ u8* DMS(u64 val);
 u8* DTD(u64 cur_ms, u64 event_ms);
 
 #endif /* ! AFL_DESCRIBE_H */
-

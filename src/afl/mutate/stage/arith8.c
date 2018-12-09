@@ -10,12 +10,16 @@
 #include "afl/mutate/test/bitflip.h"
 
 /* 8-bit arithmetics. */
-int stage_arith8(char** argv, u64 *orig_hit_cnt, u64 *new_hit_cnt,
-    u8 *out_buf, s32 len, u8 *eff_map) {
-  stage_name  = "arith 8/8";
+int stage_arith8(char** argv,
+                 u64* orig_hit_cnt,
+                 u64* new_hit_cnt,
+                 u8* out_buf,
+                 s32 len,
+                 u8* eff_map) {
+  stage_name = "arith 8/8";
   stage_short = "arith8";
-  stage_cur   = 0;
-  stage_max   = 2 * len * ARITH_MAX;
+  stage_cur = 0;
+  stage_max = 2 * len * ARITH_MAX;
 
   stage_val_type = STAGE_VAL_LE;
 
@@ -49,7 +53,7 @@ int stage_arith8(char** argv, u64 *orig_hit_cnt, u64 *new_hit_cnt,
         stage_max--;
       }
 
-      r =  orig ^ (orig - j);
+      r = orig ^ (orig - j);
 
       if (!could_be_bitflip(r)) {
         stage_cur_val = -j;
@@ -69,8 +73,7 @@ int stage_arith8(char** argv, u64 *orig_hit_cnt, u64 *new_hit_cnt,
 
   *new_hit_cnt = queued_paths + unique_crashes;
 
-  stage_finds[STAGE_ARITH8]  += *new_hit_cnt - *orig_hit_cnt;
+  stage_finds[STAGE_ARITH8] += *new_hit_cnt - *orig_hit_cnt;
   stage_cycles[STAGE_ARITH8] += stage_max;
   return 1;
 }
-

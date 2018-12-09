@@ -2,8 +2,8 @@
 
 #include "afl/bitmap/coverage.h"
 
-#include "afl/globals.h"
 #include "afl/debug.h"
+#include "afl/globals.h"
 
 #include "afl/bitmap.h"
 
@@ -23,4 +23,3 @@ void check_map_coverage(void) {
 
   WARNF("Recompile binary with newer version of afl to improve coverage!");
 }
-

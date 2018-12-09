@@ -6,4 +6,3 @@ void show_stats(void);
 void show_init_stats(void);
 
 #endif /* ! AFL_CAPTURE_STATS_H */
-

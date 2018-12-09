@@ -31,9 +31,8 @@ u8* describe_op(u8 hnb) {
       sprintf(ret + strlen(ret), ",pos:%u", stage_cur_byte);
 
       if (stage_val_type != STAGE_VAL_NONE) {
-        sprintf(ret + strlen(ret), ",val:%s%+d", 
-                (stage_val_type == STAGE_VAL_BE) ? "be:" : "",
-                stage_cur_val);
+        sprintf(ret + strlen(ret), ",val:%s%+d",
+                (stage_val_type == STAGE_VAL_BE) ? "be:" : "", stage_cur_val);
       }
 
     } else {

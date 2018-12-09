@@ -18,4 +18,3 @@ void minimize_bits(u8* dst, u8* src) {
     i++;
   }
 }
-

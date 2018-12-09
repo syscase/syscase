@@ -2,21 +2,21 @@
 
 #include "afl/testcase.h"
 
-#include "afl/globals.h"
 #include "afl/alloc-inl.h"
+#include "afl/globals.h"
 
-#include "afl/utils/random.h"
 #include "afl/describe.h"
+#include "afl/utils/random.h"
 
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
 #include <dirent.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 /* Read all testcases from the input directory, then queue them for testing.
    Called at startup. */
 void read_testcases(void) {
-  struct dirent **nl;
+  struct dirent** nl;
   s32 nl_cnt;
   u32 i;
   u8* fn;
@@ -39,9 +39,12 @@ void read_testcases(void) {
   if (nl_cnt < 0) {
     if (errno == ENOENT || errno == ENOTDIR) {
       SAYF("\n" cLRD "[-] " cRST
-           "The input directory does not seem to be valid - try again. The fuzzer needs\n"
-           "    one or more test case to start with - ideally, a small file under 1 kB\n"
-           "    or so. The cases must be stored as regular files directly in the input\n"
+           "The input directory does not seem to be valid - try again. The "
+           "fuzzer needs\n"
+           "    one or more test case to start with - ideally, a small file "
+           "under 1 kB\n"
+           "    or so. The cases must be stored as regular files directly in "
+           "the input\n"
            "    directory.\n");
     }
 
@@ -57,12 +60,13 @@ void read_testcases(void) {
     struct stat st;
 
     u8* fn = alloc_printf("%s/%s", in_dir, nl[i]->d_name);
-    u8* dfn = alloc_printf("%s/.state/deterministic_done/%s", in_dir, nl[i]->d_name);
+    u8* dfn =
+        alloc_printf("%s/.state/deterministic_done/%s", in_dir, nl[i]->d_name);
 
-    u8  passed_det = 0;
+    u8 passed_det = 0;
 
     free(nl[i]); /* not tracked */
- 
+
     if (lstat(fn, &st) || access(fn, R_OK)) {
       PFATAL("Unable to access '%s'", fn);
     }
@@ -75,8 +79,8 @@ void read_testcases(void) {
     }
 
     if (st.st_size > MAX_FILE) {
-      FATAL("Test case '%s' is too big (%s, limit is %s)", fn,
-            DMS(st.st_size), DMS(MAX_FILE));
+      FATAL("Test case '%s' is too big (%s, limit is %s)", fn, DMS(st.st_size),
+            DMS(MAX_FILE));
     }
 
     /* Check for metadata that indicates that deterministic fuzzing
@@ -95,9 +99,12 @@ void read_testcases(void) {
 
   if (!queued_paths) {
     SAYF("\n" cLRD "[-] " cRST
-         "Looks like there are no valid test cases in the input directory! The fuzzer\n"
-         "    needs one or more test case to start with - ideally, a small file under\n"
-         "    1 kB or so. The cases must be stored as regular files directly in the\n"
+         "Looks like there are no valid test cases in the input directory! The "
+         "fuzzer\n"
+         "    needs one or more test case to start with - ideally, a small "
+         "file under\n"
+         "    1 kB or so. The cases must be stored as regular files directly "
+         "in the\n"
          "    input directory.\n");
 
     FATAL("No usable test cases in '%s'", in_dir);
@@ -171,4 +178,3 @@ void write_with_gap(void* mem, u32 len, u32 skip_at, u32 skip_len) {
     close(fd);
   }
 }
-
