@@ -608,11 +608,6 @@ int main(int argc, char** argv) {
   }
 
   while (1) {
-    // OPTEE-DEBUG START
-    ACTF("In fuzz loop");
-    fflush(stdout);
-    // OPTEE-DEBUG END
-
     u8 skipped_fuzz;
 
     cull_queue();
