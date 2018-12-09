@@ -1,4 +1,5 @@
 #include "afl/types.h"
+
 #include "afl/fuzz/common.h"
 
 #include "afl/globals.h"

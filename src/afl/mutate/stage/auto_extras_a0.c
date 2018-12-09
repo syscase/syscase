@@ -1,4 +1,5 @@
 #include "afl/types.h"
+
 #include "afl/mutate/stage/auto_extras_a0.h"
 
 #include "afl/globals.h"

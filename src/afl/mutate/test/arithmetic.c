@@ -1,4 +1,5 @@
 #include "afl/types.h"
+
 #include "afl/mutate/test/arithmetic.h"
 
 #include "afl/config.h"

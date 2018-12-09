@@ -1,4 +1,5 @@
 #include "afl/types.h"
+
 #include "afl/mutate/stage/flip4.h"
 
 #include "afl/globals.h"

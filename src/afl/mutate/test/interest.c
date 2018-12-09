@@ -1,4 +1,5 @@
 #include "afl/types.h"
+
 #include "afl/mutate/test/interest.h"
 
 #include "afl/config.h"

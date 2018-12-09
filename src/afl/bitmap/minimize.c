@@ -1,4 +1,5 @@
 #include "afl/types.h"
+
 #include "afl/bitmap/minimize.h"
 
 #include "afl/config.h"

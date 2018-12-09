@@ -1,4 +1,5 @@
 #include "afl/types.h"
+
 #include "afl/setup/checks.h"
 
 #include "afl/debug.h"

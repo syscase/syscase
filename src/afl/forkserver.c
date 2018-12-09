@@ -1,4 +1,5 @@
 #include "afl/types.h"
+
 #include "afl/forkserver.h"
 
 #include "afl/globals.h"
