@@ -214,11 +214,17 @@ u8 fuzz_one(char** argv) {
   /************
    * TRIMMING *
    ************/
-  if(!stage_trim(argv, in_buf, &len)) {
-    goto abandon_entry;
+  if (!syscase_mode) {
+    if(!stage_trim(argv, in_buf, &len)) {
+      goto abandon_entry;
+    }
   }
 
   memcpy(out_buf, in_buf, len);
+
+  if (syscase_mode) {
+    goto syscase_stage;
+  }
 
   /*********************
    * PERFORMANCE SCORE *
@@ -386,6 +392,8 @@ havoc_stage:
         orig_perf, &perf_score, doing_det, orig_in)) {
     goto abandon_entry;
   }
+
+syscase_stage:
 
   ret_val = 0;
 
