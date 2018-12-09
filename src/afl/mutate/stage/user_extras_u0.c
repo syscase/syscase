@@ -12,12 +12,17 @@
 #include <string.h>
 
 /* Overwrite with user-supplied extras. */
-int stage_user_extras_u0(char** argv, u64 *orig_hit_cnt, u64 *new_hit_cnt,
-    u8 *in_buf, u8 *out_buf, s32 len, u8 *eff_map) {
-  stage_name  = "user extras (over)";
+int stage_user_extras_u0(char** argv,
+                         u64* orig_hit_cnt,
+                         u64* new_hit_cnt,
+                         u8* in_buf,
+                         u8* out_buf,
+                         s32 len,
+                         u8* eff_map) {
+  stage_name = "user extras (over)";
   stage_short = "ext_UO";
-  stage_cur   = 0;
-  stage_max   = extras_cnt * len;
+  stage_cur = 0;
+  stage_max = extras_cnt * len;
 
   stage_val_type = STAGE_VAL_NONE;
 
@@ -41,7 +46,6 @@ int stage_user_extras_u0(char** argv, u64 *orig_hit_cnt, u64 *new_hit_cnt,
           extras[j].len > len - i ||
           !memcmp(extras[j].data, out_buf + i, extras[j].len) ||
           !memchr(eff_map + EFF_APOS(i), 1, EFF_SPAN_ALEN(i, extras[j].len))) {
-
         stage_max--;
         continue;
       }
@@ -62,9 +66,8 @@ int stage_user_extras_u0(char** argv, u64 *orig_hit_cnt, u64 *new_hit_cnt,
 
   *new_hit_cnt = queued_paths + unique_crashes;
 
-  stage_finds[STAGE_EXTRAS_UO]  += *new_hit_cnt - *orig_hit_cnt;
+  stage_finds[STAGE_EXTRAS_UO] += *new_hit_cnt - *orig_hit_cnt;
   stage_cycles[STAGE_EXTRAS_UO] += stage_max;
 
   return 1;
 }
-

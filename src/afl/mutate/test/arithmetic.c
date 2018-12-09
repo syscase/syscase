@@ -15,8 +15,7 @@ u8 could_be_arith(u32 old_val, u32 new_val, u8 blen) {
 
   /* See if one-byte adjustments to any byte could produce this result. */
   for (i = 0; i < blen; i++) {
-    u8 a = old_val >> (8 * i),
-       b = new_val >> (8 * i);
+    u8 a = old_val >> (8 * i), b = new_val >> (8 * i);
 
     if (a != b) {
       diffs++;
@@ -27,8 +26,7 @@ u8 could_be_arith(u32 old_val, u32 new_val, u8 blen) {
 
   /* If only one byte differs and the values are within range, return 1. */
   if (diffs == 1) {
-    if ((u8)(ov - nv) <= ARITH_MAX ||
-        (u8)(nv - ov) <= ARITH_MAX) {
+    if ((u8)(ov - nv) <= ARITH_MAX || (u8)(nv - ov) <= ARITH_MAX) {
       return 1;
     }
   }
@@ -41,8 +39,7 @@ u8 could_be_arith(u32 old_val, u32 new_val, u8 blen) {
   diffs = 0;
 
   for (i = 0; i < blen / 2; i++) {
-    u16 a = old_val >> (16 * i),
-        b = new_val >> (16 * i);
+    u16 a = old_val >> (16 * i), b = new_val >> (16 * i);
 
     if (a != b) {
       diffs++;
@@ -53,15 +50,14 @@ u8 could_be_arith(u32 old_val, u32 new_val, u8 blen) {
 
   /* If only one word differs and the values are within range, return 1. */
   if (diffs == 1) {
-    if ((u16)(ov - nv) <= ARITH_MAX ||
-        (u16)(nv - ov) <= ARITH_MAX) {
+    if ((u16)(ov - nv) <= ARITH_MAX || (u16)(nv - ov) <= ARITH_MAX) {
       return 1;
     }
 
-    ov = SWAP16(ov); nv = SWAP16(nv);
+    ov = SWAP16(ov);
+    nv = SWAP16(nv);
 
-    if ((u16)(ov - nv) <= ARITH_MAX ||
-        (u16)(nv - ov) <= ARITH_MAX) {
+    if ((u16)(ov - nv) <= ARITH_MAX || (u16)(nv - ov) <= ARITH_MAX) {
       return 1;
     }
   }
@@ -80,9 +76,7 @@ u8 could_be_arith(u32 old_val, u32 new_val, u8 blen) {
         (u32)(new_val - old_val) <= ARITH_MAX) {
       return 1;
     }
-
   }
 
   return 0;
 }
-

@@ -31,4 +31,3 @@ enum {
 };
 
 #endif /* ! AFL_FUZZ_STAGES_H */
-

@@ -2,11 +2,11 @@
 
 #include "afl/setup/qemu.h"
 
-#include "afl/globals.h"
 #include "afl/alloc-inl.h"
+#include "afl/globals.h"
 
-#include <unistd.h>
 #include <string.h>
+#include <unistd.h>
 
 /* Rewrite argv for QEMU. */
 char** get_qemu_argv(int qemu_mode, u8* own_loc, char** argv, int argc) {
@@ -16,7 +16,7 @@ char** get_qemu_argv(int qemu_mode, u8* own_loc, char** argv, int argc) {
   /* Workaround for a QEMU stability glitch. */
   setenv("QEMU_LOG", "nochain", 1);
 
-  if(qemu_mode == 1) {
+  if (qemu_mode == 1) {
     memcpy(new_argv + 3, argv + 1, sizeof(char*) * argc);
 
     new_argv[2] = target_path;
@@ -29,7 +29,7 @@ char** get_qemu_argv(int qemu_mode, u8* own_loc, char** argv, int argc) {
   tmp = getenv("AFL_PATH");
 
   if (tmp) {
-    if(qemu_mode == 1) {
+    if (qemu_mode == 1) {
       cp = alloc_printf("%s/afl-qemu-trace", tmp);
     } else {
       cp = alloc_printf("%s/%s", tmp, argv[0]);
@@ -49,7 +49,7 @@ char** get_qemu_argv(int qemu_mode, u8* own_loc, char** argv, int argc) {
   if (rsl) {
     *rsl = 0;
 
-    if(qemu_mode == 1) {
+    if (qemu_mode == 1) {
       cp = alloc_printf("%s/afl-qemu-trace", own_copy);
     } else {
       cp = alloc_printf("%s/%s", own_copy, argv[0]);
@@ -72,15 +72,20 @@ char** get_qemu_argv(int qemu_mode, u8* own_loc, char** argv, int argc) {
   }
 
   SAYF("\n" cLRD "[-] " cRST
-       "Oops, unable to find the 'afl-qemu-trace' binary. The binary must be built\n"
-       "    separately by following the instructions in qemu_mode/README.qemu. If you\n"
-       "    already have the binary installed, you may need to specify AFL_PATH in the\n"
+       "Oops, unable to find the 'afl-qemu-trace' binary. The binary must be "
+       "built\n"
+       "    separately by following the instructions in qemu_mode/README.qemu. "
+       "If you\n"
+       "    already have the binary installed, you may need to specify "
+       "AFL_PATH in the\n"
        "    environment.\n\n"
 
-       "    Of course, even without QEMU, afl-fuzz can still work with binaries that are\n"
-       "    instrumented at compile time with afl-gcc. It is also possible to use it as a\n"
-       "    traditional \"dumb\" fuzzer by specifying '-n' in the command line.\n");
+       "    Of course, even without QEMU, afl-fuzz can still work with "
+       "binaries that are\n"
+       "    instrumented at compile time with afl-gcc. It is also possible to "
+       "use it as a\n"
+       "    traditional \"dumb\" fuzzer by specifying '-n' in the command "
+       "line.\n");
 
   FATAL("Failed to locate 'afl-qemu-trace'.");
 }
-

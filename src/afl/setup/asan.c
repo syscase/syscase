@@ -24,8 +24,8 @@ void check_asan_opts(void) {
 
   if (x) {
     if (!strstr(x, "exit_code=" STRINGIFY(MSAN_ERROR))) {
-      FATAL("Custom MSAN_OPTIONS set without exit_code="
-            STRINGIFY(MSAN_ERROR) " - please fix!");
+      FATAL("Custom MSAN_OPTIONS set without exit_code=" STRINGIFY(
+          MSAN_ERROR) " - please fix!");
     }
 
     if (!strstr(x, "symbolize=0")) {
@@ -33,4 +33,3 @@ void check_asan_opts(void) {
     }
   }
 }
-

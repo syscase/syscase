@@ -4,4 +4,3 @@
 double get_runnable_processes(void);
 
 #endif /* ! AFL_UTILS_PROC_H */
-

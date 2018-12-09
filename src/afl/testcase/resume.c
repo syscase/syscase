@@ -2,19 +2,19 @@
 
 #include "afl/testcase/resume.h"
 
-#include "afl/globals.h"
 #include "afl/alloc-inl.h"
+#include "afl/globals.h"
 
-#include <unistd.h>
-#include <sys/stat.h>
 #include <fcntl.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 /* When resuming, try to find the queue position to start from. This makes sense
    only when resuming, and when we can find the original fuzzer_stats. */
 u32 find_start_position(void) {
   static u8 tmp[4096]; /* Ought to be enough for anybody. */
 
-  u8  *fn, *off;
+  u8 *fn, *off;
   s32 fd, i;
   u32 ret;
 
@@ -35,7 +35,8 @@ u32 find_start_position(void) {
     return 0;
   }
 
-  i = read(fd, tmp, sizeof(tmp) - 1); (void)i; /* Ignore errors */
+  i = read(fd, tmp, sizeof(tmp) - 1);
+  (void)i; /* Ignore errors */
   close(fd);
 
   off = strstr(tmp, "cur_path          : ");
@@ -57,7 +58,7 @@ u32 find_start_position(void) {
 void find_timeout(void) {
   static u8 tmp[4096]; /* Ought to be enough for anybody. */
 
-  u8  *fn, *off;
+  u8 *fn, *off;
   s32 fd, i;
   u32 ret;
 
@@ -78,7 +79,8 @@ void find_timeout(void) {
     return;
   }
 
-  i = read(fd, tmp, sizeof(tmp) - 1); (void)i; /* Ignore errors */
+  i = read(fd, tmp, sizeof(tmp) - 1);
+  (void)i; /* Ignore errors */
   close(fd);
 
   off = strstr(tmp, "exec_timeout   : ");
@@ -94,4 +96,3 @@ void find_timeout(void) {
   exec_tmout = ret;
   timeout_given = 3;
 }
-

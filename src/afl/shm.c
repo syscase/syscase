@@ -2,8 +2,8 @@
 
 #include "afl/shm.h"
 
-#include "afl/globals.h"
 #include "afl/alloc-inl.h"
+#include "afl/globals.h"
 
 #include <string.h>
 #include <sys/shm.h>
@@ -45,9 +45,8 @@ void setup_shm(void) {
   ck_free(shm_str);
 
   trace_bits = shmat(shm_id, NULL, 0);
-  
+
   if (!trace_bits) {
     PFATAL("shmat() failed");
   }
 }
-

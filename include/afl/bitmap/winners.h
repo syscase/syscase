@@ -4,4 +4,3 @@
 void cull_queue(void);
 
 #endif /* ! AFL_BITMAP_WINNERS_H */
-

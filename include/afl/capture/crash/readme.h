@@ -4,4 +4,3 @@
 void write_crash_readme(void);
 
 #endif /* ! AFL_CAPTURE_CRASH_README_H */
-

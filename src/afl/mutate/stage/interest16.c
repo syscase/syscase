@@ -7,17 +7,21 @@
 #include "afl/fuzz/common.h"
 #include "afl/fuzz/stages.h"
 #include "afl/mutate/eff.h"
-#include "afl/mutate/test/bitflip.h"
 #include "afl/mutate/test/arithmetic.h"
+#include "afl/mutate/test/bitflip.h"
 #include "afl/mutate/test/interest.h"
 
 /* Setting 16-bit integers, both endians. */
-int stage_interest16(char** argv, u64 *orig_hit_cnt, u64 *new_hit_cnt,
-    u8 *out_buf, s32 len, u8 *eff_map) {
-  stage_name  = "interest 16/8";
+int stage_interest16(char** argv,
+                     u64* orig_hit_cnt,
+                     u64* new_hit_cnt,
+                     u8* out_buf,
+                     s32 len,
+                     u8* eff_map) {
+  stage_name = "interest 16/8";
   stage_short = "int16";
-  stage_cur   = 0;
-  stage_max   = 2 * (len - 1) * (sizeof(interesting_16) >> 1);
+  stage_cur = 0;
+  stage_max = 2 * (len - 1) * (sizeof(interesting_16) >> 1);
 
   *orig_hit_cnt = *new_hit_cnt;
 
@@ -73,9 +77,8 @@ int stage_interest16(char** argv, u64 *orig_hit_cnt, u64 *new_hit_cnt,
 
   *new_hit_cnt = queued_paths + unique_crashes;
 
-  stage_finds[STAGE_INTEREST16]  += *new_hit_cnt - *orig_hit_cnt;
+  stage_finds[STAGE_INTEREST16] += *new_hit_cnt - *orig_hit_cnt;
   stage_cycles[STAGE_INTEREST16] += stage_max;
 
   return 1;
 }
-

@@ -1,13 +1,13 @@
 #include "afl/types.h"
 
-#include "afl/testcase/rotate.h"
 #include "afl/testcase/common.h"
+#include "afl/testcase/rotate.h"
 
-#include "afl/globals.h"
 #include "afl/alloc-inl.h"
+#include "afl/globals.h"
 
-#include "afl/utils/file.h"
 #include "afl/testcase/resume/clean.h"
+#include "afl/utils/file.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -21,7 +21,7 @@ void pivot_inputs(void) {
   ACTF("Creating hard links for all input files...");
 
   while (q) {
-    u8  *nfn, *rsl = strrchr(q->fname, '/');
+    u8 *nfn, *rsl = strrchr(q->fname, '/');
     u32 orig_id;
 
     if (!rsl) {
@@ -56,7 +56,6 @@ void pivot_inputs(void) {
         }
       }
     } else {
-
       /* No dice - invent a new name, capturing the original one as a
          substring. */
 #ifndef SIMPLE_FILES
@@ -71,7 +70,6 @@ void pivot_inputs(void) {
 #else
       nfn = alloc_printf("%s/queue/id_%06u", out_dir, id);
 #endif /* ^!SIMPLE_FILES */
-
     }
 
     /* Pivot to the new queue entry. */
@@ -92,4 +90,3 @@ void pivot_inputs(void) {
     nuke_resume_dir();
   }
 }
-

@@ -4,4 +4,3 @@
 void save_cmdline(u32 argc, char** argv);
 
 #endif /* ! AFL_SETUP_ARGS_H */
-

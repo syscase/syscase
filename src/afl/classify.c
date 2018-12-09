@@ -8,25 +8,17 @@
    preprocessing step for any newly acquired traces. Called on every exec,
    must be fast. */
 const u8 count_class_lookup8[256] = {
-  [0]           = 0,
-  [1]           = 1,
-  [2]           = 2,
-  [3]           = 4,
-  [4 ... 7]     = 8,
-  [8 ... 15]    = 16,
-  [16 ... 31]   = 32,
-  [32 ... 127]  = 64,
-  [128 ... 255] = 128
-};
+    [0] = 0,          [1] = 1,           [2] = 2,
+    [3] = 4,          [4 ... 7] = 8,     [8 ... 15] = 16,
+    [16 ... 31] = 32, [32 ... 127] = 64, [128 ... 255] = 128};
 
 void init_count_class16(void) {
   u32 b1, b2;
 
   for (b1 = 0; b1 < 256; b1++) {
     for (b2 = 0; b2 < 256; b2++) {
-      count_class_lookup16[(b1 << 8) + b2] = 
-        (count_class_lookup8[b1] << 8) |
-        count_class_lookup8[b2];
+      count_class_lookup16[(b1 << 8) + b2] =
+          (count_class_lookup8[b1] << 8) | count_class_lookup8[b2];
     }
   }
 }
@@ -70,4 +62,3 @@ inline void classify_counts(u32* mem) {
 }
 
 #endif /* ^__x86_64__ */
-

@@ -2,31 +2,34 @@
 
 #include "afl/testcase/calibrate.h"
 
-#include "afl/globals.h"
 #include "afl/debug.h"
+#include "afl/globals.h"
 
 #include "afl/bitmap.h"
 #include "afl/bitmap/favorable.h"
-#include "afl/queue_entry.h"
+#include "afl/capture/stats.h"
+#include "afl/forkserver.h"
 #include "afl/hash.h"
+#include "afl/queue_entry.h"
+#include "afl/syscase/coverage.h"
 #include "afl/testcase.h"
 #include "afl/testcase/result.h"
-#include "afl/forkserver.h"
-#include "afl/capture/stats.h"
 #include "afl/utils/time.h"
-#include "afl/syscase/coverage.h"
 
 #include <string.h>
 
 /* Calibrate a new test case. This is done when processing the input directory
    to warn about flaky or otherwise problematic test cases early on; and when
    new paths are discovered to detect variable behavior and so on. */
-u8 calibrate_case(char** argv, struct queue_entry* q, u8* use_mem,
-                         u32 handicap, u8 from_queue) {
+u8 calibrate_case(char** argv,
+                  struct queue_entry* q,
+                  u8* use_mem,
+                  u32 handicap,
+                  u8 from_queue) {
   static u8 first_trace[MAP_SIZE];
 
-  u8  fault = 0, new_bits = 0, var_detected = 0,
-      first_run = (q->exec_cksum == 0);
+  u8 fault = 0, new_bits = 0, var_detected = 0,
+     first_run = (q->exec_cksum == 0);
 
   u64 start_us, stop_us;
 
@@ -38,14 +41,14 @@ u8 calibrate_case(char** argv, struct queue_entry* q, u8* use_mem,
      trying to calibrate already-added finds. This helps avoid trouble due
      to intermittent latency. */
   if (!from_queue || resuming_fuzz) {
-    use_tmout = MAX(exec_tmout + CAL_TMOUT_ADD,
-                    exec_tmout * CAL_TMOUT_PERC / 100);
+    use_tmout =
+        MAX(exec_tmout + CAL_TMOUT_ADD, exec_tmout * CAL_TMOUT_PERC / 100);
   }
 
   q->cal_failed++;
 
   stage_name = "calibration";
-  stage_max  = fast_cal ? 3 : CAL_CYCLES;
+  stage_max = fast_cal ? 3 : CAL_CYCLES;
 
   /* Make sure the forkserver is up before we do anything, and let's not
      count its spin-up time toward binary calibration. */
@@ -93,7 +96,6 @@ u8 calibrate_case(char** argv, struct queue_entry* q, u8* use_mem,
     cksum = hash32(trace_bits, MAP_SIZE, HASH_CONST);
 
     if (q->exec_cksum != cksum) {
-
       u8 hnb = has_new_bits(virgin_bits);
       if (hnb > new_bits) {
         new_bits = hnb;
@@ -105,7 +107,7 @@ u8 calibrate_case(char** argv, struct queue_entry* q, u8* use_mem,
         for (i = 0; i < MAP_SIZE; i++) {
           if (!var_bytes[i] && first_trace[i] != trace_bits[i]) {
             var_bytes[i] = 1;
-            stage_max    = CAL_CYCLES_LONG;
+            stage_max = CAL_CYCLES_LONG;
           }
         }
 
@@ -119,15 +121,15 @@ u8 calibrate_case(char** argv, struct queue_entry* q, u8* use_mem,
 
   stop_us = get_cur_time_us();
 
-  total_cal_us     += stop_us - start_us;
+  total_cal_us += stop_us - start_us;
   total_cal_cycles += stage_max;
 
   /* OK, let's collect some stats about the performance of this test case.
      This is used for fuzzing air time calculations in calculate_score(). */
-  q->exec_us     = (stop_us - start_us) / stage_max;
+  q->exec_us = (stop_us - start_us) / stage_max;
   q->bitmap_size = count_bytes(trace_bits);
-  q->handicap    = handicap;
-  q->cal_failed  = 0;
+  q->handicap = handicap;
+  q->cal_failed = 0;
 
   total_bitmap_size += q->bitmap_size;
   total_bitmap_entries++;
@@ -159,8 +161,8 @@ abort_calibration:
   }
 
   stage_name = old_sn;
-  stage_cur  = old_sc;
-  stage_max  = old_sm;
+  stage_cur = old_sc;
+  stage_max = old_sm;
 
   if (!first_run) {
     show_stats();
@@ -168,4 +170,3 @@ abort_calibration:
 
   return fault;
 }
-

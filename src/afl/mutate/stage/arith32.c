@@ -10,12 +10,16 @@
 #include "afl/mutate/test/bitflip.h"
 
 /* 32-bit arithmetics, both endians. */
-int stage_arith32(char** argv, u64 *orig_hit_cnt, u64 *new_hit_cnt,
-    u8 *out_buf, s32 len, u8 *eff_map) {
-  stage_name  = "arith 32/8";
+int stage_arith32(char** argv,
+                  u64* orig_hit_cnt,
+                  u64* new_hit_cnt,
+                  u8* out_buf,
+                  s32 len,
+                  u8* eff_map) {
+  stage_name = "arith 32/8";
   stage_short = "arith32";
-  stage_cur   = 0;
-  stage_max   = 4 * (len - 3) * ARITH_MAX;
+  stage_cur = 0;
+  stage_max = 4 * (len - 3) * ARITH_MAX;
 
   *orig_hit_cnt = *new_hit_cnt;
 
@@ -32,8 +36,7 @@ int stage_arith32(char** argv, u64 *orig_hit_cnt, u64 *new_hit_cnt,
     stage_cur_byte = i;
 
     for (int j = 1; j <= ARITH_MAX; j++) {
-      u32 r1 = orig ^ (orig + j),
-          r2 = orig ^ (orig - j),
+      u32 r1 = orig ^ (orig + j), r2 = orig ^ (orig - j),
           r3 = orig ^ SWAP32(SWAP32(orig) + j),
           r4 = orig ^ SWAP32(SWAP32(orig) - j);
 
@@ -100,9 +103,8 @@ int stage_arith32(char** argv, u64 *orig_hit_cnt, u64 *new_hit_cnt,
 
   *new_hit_cnt = queued_paths + unique_crashes;
 
-  stage_finds[STAGE_ARITH32]  += *new_hit_cnt - *orig_hit_cnt;
+  stage_finds[STAGE_ARITH32] += *new_hit_cnt - *orig_hit_cnt;
   stage_cycles[STAGE_ARITH32] += stage_max;
 
   return 1;
 }
-

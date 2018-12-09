@@ -8,4 +8,3 @@ void simplify_trace(u32* mem);
 #endif /* ^__x86_64__ */
 
 #endif /* ! AFL_SIMPLIFY_TRACE_H */
-

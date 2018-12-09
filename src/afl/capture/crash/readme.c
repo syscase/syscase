@@ -2,15 +2,15 @@
 
 #include "afl/capture/crash/readme.h"
 
-#include "afl/globals.h"
 #include "afl/alloc-inl.h"
+#include "afl/globals.h"
 
 #include "afl/describe.h"
 
-#include <unistd.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <sys/stat.h>
-#include <fcntl.h>
+#include <unistd.h>
 
 /* Write a message accompanying the crash directory :-) */
 void write_crash_readme(void) {
@@ -33,26 +33,31 @@ void write_crash_readme(void) {
     return;
   }
 
-  fprintf(f, "Command line used to find this crash:\n\n"
+  fprintf(
+      f,
+      "Command line used to find this crash:\n\n"
 
-             "%s\n\n"
+      "%s\n\n"
 
-             "If you can't reproduce a bug outside of afl-fuzz, be sure to set the same\n"
-             "memory limit. The limit used for this fuzzing session was %s.\n\n"
+      "If you can't reproduce a bug outside of afl-fuzz, be sure to set the "
+      "same\n"
+      "memory limit. The limit used for this fuzzing session was %s.\n\n"
 
-             "Need a tool to minimize test cases before investigating the crashes or sending\n"
-             "them to a vendor? Check out the afl-tmin that comes with the fuzzer!\n\n"
+      "Need a tool to minimize test cases before investigating the crashes or "
+      "sending\n"
+      "them to a vendor? Check out the afl-tmin that comes with the fuzzer!\n\n"
 
-             "Found any cool bugs in open-source tools using afl-fuzz? If yes, please drop\n"
-             "me a mail at <lcamtuf@coredump.cx> once the issues are fixed - I'd love to\n"
-             "add your finds to the gallery at:\n\n"
+      "Found any cool bugs in open-source tools using afl-fuzz? If yes, please "
+      "drop\n"
+      "me a mail at <lcamtuf@coredump.cx> once the issues are fixed - I'd love "
+      "to\n"
+      "add your finds to the gallery at:\n\n"
 
-             "  http://lcamtuf.coredump.cx/afl/\n\n"
+      "  http://lcamtuf.coredump.cx/afl/\n\n"
 
-             "Thanks :-)\n",
+      "Thanks :-)\n",
 
-             orig_cmdline, DMS(mem_limit << 20)); /* ignore errors */
+      orig_cmdline, DMS(mem_limit << 20)); /* ignore errors */
 
   fclose(f);
 }
-

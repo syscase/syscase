@@ -2,14 +2,14 @@
 
 #include "afl/queue_entry.h"
 
-#include "afl/globals.h"
 #include "afl/alloc-inl.h"
+#include "afl/globals.h"
 #include "afl/utils/time.h"
 
-#include <unistd.h>
+#include <fcntl.h>
 #include <string.h>
 #include <sys/stat.h>
-#include <fcntl.h>
+#include <unistd.h>
 
 /* Mark deterministic checks as done for a particular queue entry. We use the
    .state file to avoid repeating deterministic fuzzing when resuming aborted
@@ -87,10 +87,10 @@ void mark_as_redundant(struct queue_entry* q, u8 state) {
 void add_to_queue(u8* fname, u32 len, u8 passed_det) {
   struct queue_entry* q = ck_alloc(sizeof(struct queue_entry));
 
-  q->fname        = fname;
-  q->len          = len;
-  q->depth        = cur_depth + 1;
-  q->passed_det   = passed_det;
+  q->fname = fname;
+  q->len = len;
+  q->depth = cur_depth + 1;
+  q->passed_det = passed_det;
 
   if (q->depth > max_depth) {
     max_depth = q->depth;
@@ -128,4 +128,3 @@ void destroy_queue(void) {
     q = n;
   }
 }
-
