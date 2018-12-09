@@ -14,7 +14,7 @@
 #include <fcntl.h>
 
 const char* result_string_for(u8 result) {
-  switch(result) {
+  switch (result) {
     case FAULT_TMOUT:
       return "timeout";
     case FAULT_CRASH:
@@ -74,20 +74,20 @@ void rotate_coverage_files(u8 result) {
 
   // Create unique hard link for input file
   char *target_file = alloc_printf("%s/coverage/%s-%s-result-%s.scase", out_dir, time_str, uuid_str, result_str);
-  if(link(out_file, target_file) != 0) {
+  if (link(out_file, target_file) != 0) {
     PFATAL("Unable to create '%s'", target_file);
   }
 
   // Create coverage file, if QEMU has not created one (assume empty path).
   // Open will fail, if file already exists.
   s32 fd = open(out_file_coverage, O_CREAT | O_WRONLY | O_EXCL, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-  if(fd >= 0) {
+  if (fd >= 0) {
     close(fd);
   }
 
   // Rename coverage file to unique name
   char *target_coverage_file = alloc_printf("%s/coverage/%s-%s-result-%s.scov", out_dir, time_str, uuid_str, result_str);
-  if(link(out_file_coverage, target_coverage_file) != 0) {
+  if (link(out_file_coverage, target_coverage_file) != 0) {
     PFATAL("Unable to create '%s'", target_coverage_file);
   }
   unlink(out_file_coverage);
@@ -101,17 +101,17 @@ void rotate_coverage_files(u8 result) {
 }
 
 void rotate_boot_coverage_files() {
-  if(boot_rotated) {
+  if (boot_rotated) {
     return;
   }
 
   // Create empty boot input file
   // Open will fail, if file already exists.
   s32 fd = open(out_file, O_CREAT | O_WRONLY | O_EXCL, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-  if(fd >= 0) {
+  if (fd >= 0) {
     close(fd);
     // Truncate existing input file
-    if(truncate(out_file, 0) != 0) {
+    if (truncate(out_file, 0) != 0) {
       PFATAL("Unable to truncate '%s'", out_file);
     }
   }
@@ -122,18 +122,22 @@ void rotate_boot_coverage_files() {
 }
 
 u8 run_target(char** argv, u32 timeout) {
+  if (!coverage_mode) {
+    return afl_run_target(argv, timeout);
+  }
+
   // Truncate secure log
-  if(truncate(out_file_log_secure, 0) != 0) {
+  if (truncate(out_file_log_secure, 0) != 0) {
     PFATAL("Unable to truncate '%s'", out_file_log_secure);
   }
 
   // Truncate normal log
-  if(truncate(out_file_log_normal, 0) != 0) {
+  if (truncate(out_file_log_normal, 0) != 0) {
     PFATAL("Unable to truncate '%s'", out_file_log_normal);
   }
 
   // Truncate qemu log
-  if(truncate(out_file_log_qemu, 0) != 0) {
+  if (truncate(out_file_log_qemu, 0) != 0) {
     PFATAL("Unable to truncate '%s'", out_file_log_qemu);
   }
 

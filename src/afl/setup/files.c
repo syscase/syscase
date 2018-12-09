@@ -22,9 +22,10 @@ void setup_stdio_file(void) {
 
   ck_free(fn);
 
-  fn = alloc_printf("%s.coverage", fn);
-
-  unlink(fn); /* Ignore errors */
+  if (coverage_mode) {
+    fn = alloc_printf("%s.coverage", fn);
+    unlink(fn); /* Ignore errors */
+  }
 }
 
 /* Detect @@ in args. */
@@ -45,10 +46,13 @@ void detect_file_args(char** argv) {
       /* If we don't have a file name chosen yet, use a safe default. */
       if (!out_file) {
         out_file = alloc_printf("%s/.cur_input", out_dir);
-        out_file_coverage = alloc_printf("%s.coverage", out_file);
-        out_file_log_secure = alloc_printf("%s/secure.log", out_dir);
-        out_file_log_normal = alloc_printf("%s/normal.log", out_dir);
-        out_file_log_qemu = alloc_printf("%s/qemu.log", out_dir);
+
+        if (coverage_mode) {
+          out_file_coverage = alloc_printf("%s.coverage", out_file);
+          out_file_log_secure = alloc_printf("%s/secure.log", out_dir);
+          out_file_log_normal = alloc_printf("%s/normal.log", out_dir);
+          out_file_log_qemu = alloc_printf("%s/qemu.log", out_dir);
+        }
       }
 
       /* Be sure that we're always using fully-qualified paths. */
