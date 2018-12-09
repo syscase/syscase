@@ -4,14 +4,10 @@
 #include "afl/globals.h"
 #include "afl/alloc-inl.h"
 
-#include "afl/testcase/trim.h"
 #include "afl/testcase/result.h"
 #include "afl/testcase/calibrate.h"
-#include "afl/mutate/flip.h"
 #include "afl/mutate/eff.h"
-#include "afl/mutate/test/bitflip.h"
-#include "afl/mutate/test/arithmetic.h"
-#include "afl/mutate/test/interest.h"
+#include "afl/mutate/stage/trim.h"
 #include "afl/mutate/stage/flip1.h"
 #include "afl/mutate/stage/flip2.h"
 #include "afl/mutate/stage/flip4.h"
@@ -28,13 +24,7 @@
 #include "afl/mutate/stage/user_extras_ui.h"
 #include "afl/mutate/stage/auto_extras_a0.h"
 #include "afl/mutate/stage/havoc.h"
-#include "afl/fuzz/common.h"
-#include "afl/fuzz/stages.h"
-#include "afl/queue_entry.h"
-#include "afl/extras.h"
-#include "afl/hash.h"
 #include "afl/utils/random.h"
-#include "afl/utils/buffer.h"
 
 #include <unistd.h>
 #include <sys/mman.h>
@@ -224,24 +214,8 @@ u8 fuzz_one(char** argv) {
   /************
    * TRIMMING *
    ************/
-  if (!dumb_mode && !queue_cur->trim_done) {
-    u8 res = trim_case(argv, queue_cur, in_buf);
-
-    if (res == FAULT_ERROR) {
-      FATAL("Unable to execute target application");
-    }
-
-    if (stop_soon) {
-      cur_skipped_paths++;
-      goto abandon_entry;
-    }
-
-    /* Don't retry trimming, even if it failed. */
-    queue_cur->trim_done = 1;
-
-    if (len != queue_cur->len) {
-      len = queue_cur->len;
-    }
+  if(!stage_trim(argv, in_buf, &len)) {
+    goto abandon_entry;
   }
 
   memcpy(out_buf, in_buf, len);
