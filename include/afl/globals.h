@@ -59,6 +59,7 @@ extern u8  skip_deterministic,        /* Skip deterministic stages?       */
            fast_cal;                  /* Try to calibrate faster?         */
 
 extern u8  coverage_mode;             /* Coverage mode                    */
+extern u8  syscase_mode;              /* Syscase mode                     */
 
 extern s32 out_fd,                    /* Persistent fd for out_file       */
            dev_urandom_fd,            /* Persistent fd for /dev/urandom   */
