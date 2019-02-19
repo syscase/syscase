@@ -1,5 +1,4 @@
-ARG ALPINE_TAG=3.8
-FROM base/archlinux
+FROM archlinux/base
 
 RUN curl \
       -s "https://www.archlinux.org/mirrorlist/?country=DE&country=US&protocol=https&use_mirror_status=on" \
