@@ -33,6 +33,9 @@ void usage(u8* argv0) {
       "  -s            - syscase mode used: \n"
       "                  0: run all stages (default)\n"
       "                  1: run syscase stage only\n\n"
+      "  -j            - syscase JSON mode used: \n"
+      "                  0: run without header protection (default)\n"
+      "                  1: protect JSON header\n\n"
 
       "Other stuff:\n\n"
 
