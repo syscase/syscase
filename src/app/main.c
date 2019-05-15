@@ -133,8 +133,9 @@ u8 skip_deterministic,   /* Skip deterministic stages?       */
     deferred_mode,       /* Deferred forkserver mode?        */
     fast_cal;            /* Try to calibrate faster?         */
 
-u8 coverage_mode = 1; /* Coverage mode                    */
-u8 syscase_mode = 0;  /* Syscase mode                     */
+u8 coverage_mode = 1;      /* Coverage mode                    */
+u8 syscase_mode = 0;       /* Syscase mode                     */
+u8 syscase_json_mode = 0;  /* Syscase JSON mode                */
 
 s32 out_fd,      /* Persistent fd for out_file       */
     fsrv_ctl_fd, /* Fork server control pipe (write) */
@@ -254,7 +255,7 @@ int main(int argc, char** argv) {
   gettimeofday(&tv, &tz);
   srandom(tv.tv_sec ^ tv.tv_usec ^ getpid());
 
-  while ((opt = getopt(argc, argv, "+i:o:f:m:t:T:dnCB:S:M:x:Qc:s:")) > 0) {
+  while ((opt = getopt(argc, argv, "+i:o:f:m:t:T:dnCB:S:M:x:Qc:s:j:")) > 0) {
     switch (opt) {
       case 'i': /* input dir */
         if (in_dir) {
@@ -473,6 +474,17 @@ int main(int argc, char** argv) {
           syscase_mode = 1;
         } else {
           FATAL("Argument -s does not support given value");
+        }
+
+        break;
+
+      case 'j': /* Syscase JSON mode */
+        if (!strcmp(optarg, "0")) {
+          syscase_json_mode = 0;
+        } else if (!strcmp(optarg, "1")) {
+          syscase_json_mode = 1;
+        } else {
+          FATAL("Argument -j does not support given value");
         }
 
         break;
