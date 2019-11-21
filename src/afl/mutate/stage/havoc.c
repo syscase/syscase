@@ -73,6 +73,9 @@ int stage_havoc(char** argv,
   u8* in_buf = *orig_in_buf;
   u8* out_buf = *orig_out_buf;
 
+  s32 mutate_len;
+  u8* mutate_buf;
+
 havoc_stage:
 
   stage_cur_byte = -1;
@@ -100,6 +103,7 @@ havoc_stage:
   }
 
   temp_len = len;
+  mutate_buf = mutation_buffer_pos(out_buf, len, &mutate_len);
 
   *orig_hit_cnt = queued_paths + unique_crashes;
 
@@ -116,25 +120,25 @@ havoc_stage:
       switch (UR(15 + ((extras_cnt + a_extras_cnt) ? 2 : 0))) {
         case 0:
           /* Flip a single bit somewhere. Spooky! */
-          FLIP_BIT(out_buf, UR(temp_len << 3));
+          FLIP_BIT(mutate_buf, UR(mutate_len << 3));
           break;
 
         case 1:
           /* Set byte to interesting value. */
-          out_buf[UR(temp_len)] = interesting_8[UR(sizeof(interesting_8))];
+          mutate_buf[UR(mutate_len)] = interesting_8[UR(sizeof(interesting_8))];
           break;
 
         case 2:
           /* Set word to interesting value, randomly choosing endian. */
-          if (temp_len < 2) {
+          if (mutate_len < 2) {
             break;
           }
 
           if (UR(2)) {
-            *(u16*)(out_buf + UR(temp_len - 1)) =
+            *(u16*)(mutate_buf + UR(mutate_len - 1)) =
                 interesting_16[UR(sizeof(interesting_16) >> 1)];
           } else {
-            *(u16*)(out_buf + UR(temp_len - 1)) =
+            *(u16*)(mutate_buf + UR(mutate_len - 1)) =
                 SWAP16(interesting_16[UR(sizeof(interesting_16) >> 1)]);
           }
 
@@ -142,15 +146,15 @@ havoc_stage:
 
         case 3:
           /* Set dword to interesting value, randomly choosing endian. */
-          if (temp_len < 4) {
+          if (mutate_len < 4) {
             break;
           }
 
           if (UR(2)) {
-            *(u32*)(out_buf + UR(temp_len - 3)) =
+            *(u32*)(mutate_buf + UR(mutate_len - 3)) =
                 interesting_32[UR(sizeof(interesting_32) >> 2)];
           } else {
-            *(u32*)(out_buf + UR(temp_len - 3)) =
+            *(u32*)(mutate_buf + UR(mutate_len - 3)) =
                 SWAP32(interesting_32[UR(sizeof(interesting_32) >> 2)]);
           }
 
@@ -158,91 +162,91 @@ havoc_stage:
 
         case 4:
           /* Randomly subtract from byte. */
-          out_buf[UR(temp_len)] -= 1 + UR(ARITH_MAX);
+          mutate_buf[UR(mutate_len)] -= 1 + UR(ARITH_MAX);
           break;
 
         case 5:
           /* Randomly add to byte. */
-          out_buf[UR(temp_len)] += 1 + UR(ARITH_MAX);
+          mutate_buf[UR(mutate_len)] += 1 + UR(ARITH_MAX);
           break;
 
         case 6:
           /* Randomly subtract from word, random endian. */
-          if (temp_len < 2) {
+          if (mutate_len < 2) {
             break;
           }
 
           if (UR(2)) {
-            u32 pos = UR(temp_len - 1);
+            u32 pos = UR(mutate_len - 1);
 
-            *(u16*)(out_buf + pos) -= 1 + UR(ARITH_MAX);
+            *(u16*)(mutate_buf + pos) -= 1 + UR(ARITH_MAX);
           } else {
-            u32 pos = UR(temp_len - 1);
+            u32 pos = UR(mutate_len - 1);
             u16 num = 1 + UR(ARITH_MAX);
 
-            *(u16*)(out_buf + pos) =
-                SWAP16(SWAP16(*(u16*)(out_buf + pos)) - num);
+            *(u16*)(mutate_buf + pos) =
+                SWAP16(SWAP16(*(u16*)(mutate_buf + pos)) - num);
           }
 
           break;
 
         case 7:
           /* Randomly add to word, random endian. */
-          if (temp_len < 2) {
+          if (mutate_len < 2) {
             break;
           }
 
           if (UR(2)) {
-            u32 pos = UR(temp_len - 1);
+            u32 pos = UR(mutate_len - 1);
 
-            *(u16*)(out_buf + pos) += 1 + UR(ARITH_MAX);
+            *(u16*)(mutate_buf + pos) += 1 + UR(ARITH_MAX);
           } else {
-            u32 pos = UR(temp_len - 1);
+            u32 pos = UR(mutate_len - 1);
             u16 num = 1 + UR(ARITH_MAX);
 
-            *(u16*)(out_buf + pos) =
-                SWAP16(SWAP16(*(u16*)(out_buf + pos)) + num);
+            *(u16*)(mutate_buf + pos) =
+                SWAP16(SWAP16(*(u16*)(mutate_buf + pos)) + num);
           }
 
           break;
 
         case 8:
           /* Randomly subtract from dword, random endian. */
-          if (temp_len < 4) {
+          if (mutate_len < 4) {
             break;
           }
 
           if (UR(2)) {
-            u32 pos = UR(temp_len - 3);
+            u32 pos = UR(mutate_len - 3);
 
-            *(u32*)(out_buf + pos) -= 1 + UR(ARITH_MAX);
+            *(u32*)(mutate_buf + pos) -= 1 + UR(ARITH_MAX);
 
           } else {
-            u32 pos = UR(temp_len - 3);
+            u32 pos = UR(mutate_len - 3);
             u32 num = 1 + UR(ARITH_MAX);
 
-            *(u32*)(out_buf + pos) =
-                SWAP32(SWAP32(*(u32*)(out_buf + pos)) - num);
+            *(u32*)(mutate_buf + pos) =
+                SWAP32(SWAP32(*(u32*)(mutate_buf + pos)) - num);
           }
 
           break;
 
         case 9:
           /* Randomly add to dword, random endian. */
-          if (temp_len < 4) {
+          if (mutate_len < 4) {
             break;
           }
 
           if (UR(2)) {
-            u32 pos = UR(temp_len - 3);
+            u32 pos = UR(mutate_len - 3);
 
-            *(u32*)(out_buf + pos) += 1 + UR(ARITH_MAX);
+            *(u32*)(mutate_buf + pos) += 1 + UR(ARITH_MAX);
           } else {
-            u32 pos = UR(temp_len - 3);
+            u32 pos = UR(mutate_len - 3);
             u32 num = 1 + UR(ARITH_MAX);
 
-            *(u32*)(out_buf + pos) =
-                SWAP32(SWAP32(*(u32*)(out_buf + pos)) + num);
+            *(u32*)(mutate_buf + pos) =
+                SWAP32(SWAP32(*(u32*)(mutate_buf + pos)) + num);
           }
 
           break;
@@ -251,10 +255,14 @@ havoc_stage:
           /* Just set a random byte to a random value. Because,
              why not. We use XOR with 1-255 to eliminate the
              possibility of a no-op. */
-          out_buf[UR(temp_len)] ^= 1 + UR(255);
+          mutate_buf[UR(mutate_len)] ^= 1 + UR(255);
           break;
 
         case 11 ... 12: {
+          if (syscase_json_mode) {
+            break;
+          }
+
           /* Delete bytes. We're making this a bit more likely
              than insertion (the next option) in hopes of keeping
              files reasonably small. */
@@ -278,6 +286,10 @@ havoc_stage:
         }
 
         case 13:
+          if (syscase_json_mode) {
+            break;
+          }
+
           if (temp_len + HAVOC_BLK_XL < MAX_FILE) {
             /* Clone bytes (75%) or insert a block of constant bytes (25%). */
             u8 actually_clone = UR(4);
@@ -324,21 +336,21 @@ havoc_stage:
              bytes (25%). */
           u32 copy_from, copy_to, copy_len;
 
-          if (temp_len < 2) {
+          if (mutate_len < 2) {
             break;
           }
 
-          copy_len = choose_block_len(temp_len - 1);
+          copy_len = choose_block_len(mutate_len - 1);
 
-          copy_from = UR(temp_len - copy_len + 1);
-          copy_to = UR(temp_len - copy_len + 1);
+          copy_from = UR(mutate_len - copy_len + 1);
+          copy_to = UR(mutate_len - copy_len + 1);
 
           if (UR(4)) {
             if (copy_from != copy_to) {
-              memmove(out_buf + copy_to, out_buf + copy_from, copy_len);
+              memmove(mutate_buf + copy_to, mutate_buf + copy_from, copy_len);
             }
           } else {
-            memset(out_buf + copy_to, UR(2) ? UR(256) : out_buf[UR(temp_len)],
+            memset(mutate_buf + copy_to, UR(2) ? UR(256) : mutate_buf[UR(mutate_len)],
                    copy_len);
           }
 
@@ -348,6 +360,10 @@ havoc_stage:
         /* Values 15 and 16 can be selected only if there are any extras
            present in the dictionaries. */
         case 15: {
+          if (syscase_json_mode) {
+            break;
+          }
+
           /* Overwrite bytes with an extra. */
           if (!extras_cnt || (a_extras_cnt && UR(2))) {
             /* No user-specified extras or odds in our favor. Let's use an
@@ -381,6 +397,10 @@ havoc_stage:
         }
 
         case 16: {
+          if (syscase_json_mode) {
+            break;
+          }
+
           u32 use_extra, extra_len, insert_at = UR(temp_len + 1);
           u8* new_buf;
 
@@ -464,6 +484,10 @@ havoc_stage:
   } else {
     stage_finds[STAGE_SPLICE] += *new_hit_cnt - *orig_hit_cnt;
     stage_cycles[STAGE_SPLICE] += stage_max;
+  }
+
+  if (syscase_json_mode) {
+    goto skip_splicing;
   }
 
 #ifndef IGNORE_FINDS
@@ -559,6 +583,7 @@ retry_splicing:
   }
 
 #endif /* !IGNORE_FINDS */
+skip_splicing:
 
   return 1;
 }

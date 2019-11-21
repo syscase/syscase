@@ -16,8 +16,11 @@ int stage_syscase1(char** argv,
                    s32 len,
                    u8* a_collect,
                    u32* a_len) {
+  s32 mutate_len;
+  u8* mutate_buf = mutation_buffer_pos(out_buf, len, &mutate_len);
+
   stage_short = "sysc1";
-  stage_max = len << 3;
+  stage_max = mutate_len << 3;
   stage_name = "sycase 1";
 
   stage_val_type = STAGE_VAL_NONE;
@@ -30,13 +33,13 @@ int stage_syscase1(char** argv,
   for (stage_cur = 0; stage_cur < stage_max; stage_cur++) {
     stage_cur_byte = stage_cur >> 3;
 
-    FLIP_BIT(out_buf, 12);
+    FLIP_BIT(mutate_buf, 12);
 
     if (common_fuzz_stuff(argv, out_buf, len)) {
       return 0;
     }
 
-    FLIP_BIT(out_buf, 12);
+    FLIP_BIT(mutate_buf, 12);
   }
 
   *new_hit_cnt = queued_paths + unique_crashes;

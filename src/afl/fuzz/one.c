@@ -215,7 +215,7 @@ u8 fuzz_one(char** argv) {
   /************
    * TRIMMING *
    ************/
-  if (!syscase_mode) {
+  if (!syscase_mode && !syscase_json_mode) {
     if (!stage_trim(argv, in_buf, &len)) {
       goto abandon_entry;
     }
@@ -366,6 +366,10 @@ skip_interest:
     goto abandon_entry;
   }
 
+  if (syscase_json_mode) {
+    goto skip_user_extras;
+  }
+
   if (!stage_user_extras_ui(argv, &orig_hit_cnt, &new_hit_cnt, out_buf, len,
                             eff_map)) {
     goto abandon_entry;
@@ -403,12 +407,18 @@ havoc_stage:
     goto abandon_entry;
   }
 
+  if (!syscase_mode) {
+    goto skip_syscase_stage;
+  }
+
 syscase_stage:
 
   if (!stage_syscase1(argv, &orig_hit_cnt, &new_hit_cnt, &prev_cksum, out_buf,
                       len, a_collect, &a_len)) {
     goto abandon_entry;
   }
+
+skip_syscase_stage:
 
   ret_val = 0;
 

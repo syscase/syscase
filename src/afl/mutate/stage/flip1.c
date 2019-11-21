@@ -18,9 +18,12 @@ int stage_flip1(char** argv,
                 s32 len,
                 u8* a_collect,
                 u32* a_len) {
+  s32 mutate_len;
+  u8* mutate_buf = mutation_buffer_pos(out_buf, len, &mutate_len);
+
   /* Single walking bit. */
   stage_short = "flip1";
-  stage_max = len << 3;
+  stage_max = mutate_len << 3;
   stage_name = "bitflip 1/1";
 
   stage_val_type = STAGE_VAL_NONE;
@@ -32,13 +35,13 @@ int stage_flip1(char** argv,
   for (stage_cur = 0; stage_cur < stage_max; stage_cur++) {
     stage_cur_byte = stage_cur >> 3;
 
-    FLIP_BIT(out_buf, stage_cur);
+    FLIP_BIT(mutate_buf, stage_cur);
 
     if (common_fuzz_stuff(argv, out_buf, len)) {
       return 0;
     }
 
-    FLIP_BIT(out_buf, stage_cur);
+    FLIP_BIT(mutate_buf, stage_cur);
 
     /* While flipping the least significant bit in every byte, pull of an extra
        trick to detect possible syntax tokens. In essence, the idea is that if
@@ -73,7 +76,7 @@ int stage_flip1(char** argv,
         /* If at end of file and we are still collecting a string, grab the
            final character and force output. */
         if (*a_len < MAX_AUTO_EXTRA) {
-          a_collect[*a_len] = out_buf[stage_cur >> 3];
+          a_collect[*a_len] = mutate_buf[stage_cur >> 3];
         }
         (*a_len)++;
 
@@ -95,7 +98,7 @@ int stage_flip1(char** argv,
          any difference - we don't want no-op tokens. */
       if (cksum != queue_cur->exec_cksum) {
         if (*a_len < MAX_AUTO_EXTRA) {
-          a_collect[*a_len] = out_buf[stage_cur >> 3];
+          a_collect[*a_len] = mutate_buf[stage_cur >> 3];
         }
         (*a_len)++;
       }
