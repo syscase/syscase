@@ -19,17 +19,20 @@ int stage_flip8(char** argv,
                 s32 len,
                 u8* eff_map,
                 u32* eff_cnt) {
+  s32 mutate_len;
+  u8* mutate_buf = mutation_buffer_pos(out_buf, len, &mutate_len);
+
   /* Walking byte. */
   stage_name = "bitflip 8/8";
   stage_short = "flip8";
-  stage_max = len;
+  stage_max = mutate_len;
 
   *orig_hit_cnt = *new_hit_cnt;
 
   for (stage_cur = 0; stage_cur < stage_max; stage_cur++) {
     stage_cur_byte = stage_cur;
 
-    out_buf[stage_cur] ^= 0xFF;
+    mutate_buf[stage_cur] ^= 0xFF;
 
     if (common_fuzz_stuff(argv, out_buf, len)) {
       return 0;
@@ -44,7 +47,7 @@ int stage_flip8(char** argv,
 
       /* If in dumb mode or if the file is very short, just flag everything
          without wasting time on checksums. */
-      if (!dumb_mode && len >= EFF_MIN_LEN) {
+      if (!dumb_mode && mutate_len >= EFF_MIN_LEN) {
         cksum = hash32(trace_bits, MAP_SIZE, HASH_CONST);
       } else {
         cksum = ~queue_cur->exec_cksum;
@@ -56,22 +59,22 @@ int stage_flip8(char** argv,
       }
     }
 
-    out_buf[stage_cur] ^= 0xFF;
+    mutate_buf[stage_cur] ^= 0xFF;
   }
 
   /* If the effector map is more than EFF_MAX_PERC dense, just flag the
      whole thing as worth fuzzing, since we wouldn't be saving much time
      anyway. */
-  if (*eff_cnt != EFF_ALEN(len) &&
-      *eff_cnt * 100 / EFF_ALEN(len) > EFF_MAX_PERC) {
-    memset(eff_map, 1, EFF_ALEN(len));
+  if (*eff_cnt != EFF_ALEN(mutate_len) &&
+      *eff_cnt * 100 / EFF_ALEN(mutate_len) > EFF_MAX_PERC) {
+    memset(eff_map, 1, EFF_ALEN(mutate_len));
 
-    blocks_eff_select += EFF_ALEN(len);
+    blocks_eff_select += EFF_ALEN(mutate_len);
   } else {
     blocks_eff_select += *eff_cnt;
   }
 
-  blocks_eff_total += EFF_ALEN(len);
+  blocks_eff_total += EFF_ALEN(mutate_len);
 
   *new_hit_cnt = queued_paths + unique_crashes;
 

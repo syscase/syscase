@@ -15,15 +15,18 @@ int stage_flip32(char** argv,
                  u8* out_buf,
                  s32 len,
                  u8* eff_map) {
+  s32 mutate_len;
+  u8* mutate_buf = mutation_buffer_pos(out_buf, len, &mutate_len);
+
   /* Four walking bytes. */
   stage_name = "bitflip 32/8";
   stage_short = "flip32";
   stage_cur = 0;
-  stage_max = len - 3;
+  stage_max = mutate_len - 3;
 
   *orig_hit_cnt = *new_hit_cnt;
 
-  for (int i = 0; i < len - 3; i++) {
+  for (int i = 0; i < mutate_len - 3; i++) {
     /* Let's consult the effector map... */
     if (!eff_map[EFF_APOS(i)] && !eff_map[EFF_APOS(i + 1)] &&
         !eff_map[EFF_APOS(i + 2)] && !eff_map[EFF_APOS(i + 3)]) {
@@ -33,14 +36,14 @@ int stage_flip32(char** argv,
 
     stage_cur_byte = i;
 
-    *(u32*)(out_buf + i) ^= 0xFFFFFFFF;
+    *(u32*)(mutate_buf + i) ^= 0xFFFFFFFF;
 
     if (common_fuzz_stuff(argv, out_buf, len)) {
       return 0;
     }
     stage_cur++;
 
-    *(u32*)(out_buf + i) ^= 0xFFFFFFFF;
+    *(u32*)(mutate_buf + i) ^= 0xFFFFFFFF;
   }
 
   *new_hit_cnt = queued_paths + unique_crashes;
