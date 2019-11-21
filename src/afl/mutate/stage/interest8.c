@@ -17,18 +17,21 @@ int stage_interest8(char** argv,
                     u8* out_buf,
                     s32 len,
                     u8* eff_map) {
+  s32 mutate_len;
+  u8* mutate_buf = mutation_buffer_pos(out_buf, len, &mutate_len);
+
   stage_name = "interest 8/8";
   stage_short = "int8";
   stage_cur = 0;
-  stage_max = len * sizeof(interesting_8);
+  stage_max = mutate_len * sizeof(interesting_8);
 
   stage_val_type = STAGE_VAL_LE;
 
   *orig_hit_cnt = *new_hit_cnt;
 
   /* Setting 8-bit integers. */
-  for (int i = 0; i < len; i++) {
-    u8 orig = out_buf[i];
+  for (int i = 0; i < mutate_len; i++) {
+    u8 orig = mutate_buf[i];
 
     /* Let's consult the effector map... */
     if (!eff_map[EFF_APOS(i)]) {
@@ -47,13 +50,13 @@ int stage_interest8(char** argv,
       }
 
       stage_cur_val = interesting_8[j];
-      out_buf[i] = interesting_8[j];
+      mutate_buf[i] = interesting_8[j];
 
       if (common_fuzz_stuff(argv, out_buf, len)) {
         return 0;
       }
 
-      out_buf[i] = orig;
+      mutate_buf[i] = orig;
       stage_cur++;
     }
   }

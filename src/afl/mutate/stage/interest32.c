@@ -18,15 +18,18 @@ int stage_interest32(char** argv,
                      u8* out_buf,
                      s32 len,
                      u8* eff_map) {
+  s32 mutate_len;
+  u8* mutate_buf = mutation_buffer_pos(out_buf, len, &mutate_len);
+
   stage_name = "interest 32/8";
   stage_short = "int32";
   stage_cur = 0;
-  stage_max = 2 * (len - 3) * (sizeof(interesting_32) >> 2);
+  stage_max = 2 * (mutate_len - 3) * (sizeof(interesting_32) >> 2);
 
   *orig_hit_cnt = *new_hit_cnt;
 
-  for (int i = 0; i < len - 3; i++) {
-    u32 orig = *(u32*)(out_buf + i);
+  for (int i = 0; i < mutate_len - 3; i++) {
+    u32 orig = *(u32*)(mutate_buf + i);
 
     /* Let's consult the effector map... */
     if (!eff_map[EFF_APOS(i)] && !eff_map[EFF_APOS(i + 1)] &&
@@ -47,7 +50,7 @@ int stage_interest32(char** argv,
           !could_be_interest(orig, interesting_32[j], 4, 0)) {
         stage_val_type = STAGE_VAL_LE;
 
-        *(u32*)(out_buf + i) = interesting_32[j];
+        *(u32*)(mutate_buf + i) = interesting_32[j];
 
         if (common_fuzz_stuff(argv, out_buf, len)) {
           return 0;
@@ -63,7 +66,7 @@ int stage_interest32(char** argv,
           !could_be_interest(orig, SWAP32(interesting_32[j]), 4, 1)) {
         stage_val_type = STAGE_VAL_BE;
 
-        *(u32*)(out_buf + i) = SWAP32(interesting_32[j]);
+        *(u32*)(mutate_buf + i) = SWAP32(interesting_32[j]);
         if (common_fuzz_stuff(argv, out_buf, len)) {
           return 0;
         }
@@ -73,7 +76,7 @@ int stage_interest32(char** argv,
       }
     }
 
-    *(u32*)(out_buf + i) = orig;
+    *(u32*)(mutate_buf + i) = orig;
   }
 
   *new_hit_cnt = queued_paths + unique_crashes;

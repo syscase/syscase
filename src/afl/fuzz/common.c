@@ -1,3 +1,6 @@
+#define _GNU_SOURCE
+#include <string.h>
+
 #include "afl/types.h"
 
 #include "afl/fuzz/common.h"
@@ -10,6 +13,16 @@
 #include "afl/syscase/coverage.h"
 #include "afl/testcase.h"
 #include "afl/testcase/result.h"
+
+void *mutation_buffer_pos(u8* out_buf, u32 len, u32* mutate_buffer_len) {
+  if (syscase_json_mode) {
+    *mutate_buffer_len = len;
+    return out_buf;
+  }
+  u8* tmp = memmem(out_buf, len, BINARY_DELIMITER, sizeof(BINARY_DELIMITER) - 1) + sizeof(BINARY_DELIMITER) - 1;
+  *mutate_buffer_len = len - (tmp - out_buf);
+  return tmp;
+}
 
 /* Write a modified test case, run program, process results. Handle
    error conditions, returning 1 if it's time to bail out. This is

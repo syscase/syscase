@@ -16,17 +16,20 @@ int stage_arith8(char** argv,
                  u8* out_buf,
                  s32 len,
                  u8* eff_map) {
+  s32 mutate_len;
+  u8* mutate_buf = mutation_buffer_pos(out_buf, len, &mutate_len);
+
   stage_name = "arith 8/8";
   stage_short = "arith8";
   stage_cur = 0;
-  stage_max = 2 * len * ARITH_MAX;
+  stage_max = 2 * mutate_len * ARITH_MAX;
 
   stage_val_type = STAGE_VAL_LE;
 
   *orig_hit_cnt = *new_hit_cnt;
 
-  for (int i = 0; i < len; i++) {
-    u8 orig = out_buf[i];
+  for (int i = 0; i < mutate_len; i++) {
+    u8 orig = mutate_buf[i];
 
     /* Let's consult the effector map... */
     if (!eff_map[EFF_APOS(i)]) {
@@ -43,7 +46,7 @@ int stage_arith8(char** argv,
          of a bitflip. */
       if (!could_be_bitflip(r)) {
         stage_cur_val = j;
-        out_buf[i] = orig + j;
+        mutate_buf[i] = orig + j;
 
         if (common_fuzz_stuff(argv, out_buf, len)) {
           return 0;
@@ -57,7 +60,7 @@ int stage_arith8(char** argv,
 
       if (!could_be_bitflip(r)) {
         stage_cur_val = -j;
-        out_buf[i] = orig - j;
+        mutate_buf[i] = orig - j;
 
         if (common_fuzz_stuff(argv, out_buf, len)) {
           return 0;
@@ -67,7 +70,7 @@ int stage_arith8(char** argv,
         stage_max--;
       }
 
-      out_buf[i] = orig;
+      mutate_buf[i] = orig;
     }
   }
 

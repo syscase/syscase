@@ -16,15 +16,18 @@ int stage_arith32(char** argv,
                   u8* out_buf,
                   s32 len,
                   u8* eff_map) {
+  s32 mutate_len;
+  u8* mutate_buf = mutation_buffer_pos(out_buf, len, &mutate_len);
+
   stage_name = "arith 32/8";
   stage_short = "arith32";
   stage_cur = 0;
-  stage_max = 4 * (len - 3) * ARITH_MAX;
+  stage_max = 4 * (mutate_len - 3) * ARITH_MAX;
 
   *orig_hit_cnt = *new_hit_cnt;
 
-  for (int i = 0; i < len - 3; i++) {
-    u32 orig = *(u32*)(out_buf + i);
+  for (int i = 0; i < mutate_len - 3; i++) {
+    u32 orig = *(u32*)(mutate_buf + i);
 
     /* Let's consult the effector map... */
     if (!eff_map[EFF_APOS(i)] && !eff_map[EFF_APOS(i + 1)] &&
@@ -46,7 +49,7 @@ int stage_arith32(char** argv,
 
       if ((orig & 0xffff) + j > 0xffff && !could_be_bitflip(r1)) {
         stage_cur_val = j;
-        *(u32*)(out_buf + i) = orig + j;
+        *(u32*)(mutate_buf + i) = orig + j;
 
         if (common_fuzz_stuff(argv, out_buf, len)) {
           return 0;
@@ -59,7 +62,7 @@ int stage_arith32(char** argv,
 
       if ((orig & 0xffff) < j && !could_be_bitflip(r2)) {
         stage_cur_val = -j;
-        *(u32*)(out_buf + i) = orig - j;
+        *(u32*)(mutate_buf + i) = orig - j;
 
         if (common_fuzz_stuff(argv, out_buf, len)) {
           return 0;
@@ -74,7 +77,7 @@ int stage_arith32(char** argv,
 
       if ((SWAP32(orig) & 0xffff) + j > 0xffff && !could_be_bitflip(r3)) {
         stage_cur_val = j;
-        *(u32*)(out_buf + i) = SWAP32(SWAP32(orig) + j);
+        *(u32*)(mutate_buf + i) = SWAP32(SWAP32(orig) + j);
 
         if (common_fuzz_stuff(argv, out_buf, len)) {
           return 0;
@@ -86,7 +89,7 @@ int stage_arith32(char** argv,
 
       if ((SWAP32(orig) & 0xffff) < j && !could_be_bitflip(r4)) {
         stage_cur_val = -j;
-        *(u32*)(out_buf + i) = SWAP32(SWAP32(orig) - j);
+        *(u32*)(mutate_buf + i) = SWAP32(SWAP32(orig) - j);
 
         if (common_fuzz_stuff(argv, out_buf, len)) {
           return 0;
@@ -97,7 +100,7 @@ int stage_arith32(char** argv,
         stage_max--;
       }
 
-      *(u32*)(out_buf + i) = orig;
+      *(u32*)(mutate_buf + i) = orig;
     }
   }
 
