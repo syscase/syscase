@@ -6,7 +6,6 @@
 #include "afl/globals.h"
 
 #include <errno.h>
-#include <stropts.h>
 #include <sys/ioctl.h>
 
 /* Check if we're on TTY. */
