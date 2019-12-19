@@ -350,8 +350,8 @@ havoc_stage:
               memmove(mutate_buf + copy_to, mutate_buf + copy_from, copy_len);
             }
           } else {
-            memset(mutate_buf + copy_to, UR(2) ? UR(256) : mutate_buf[UR(mutate_len)],
-                   copy_len);
+            memset(mutate_buf + copy_to,
+                   UR(2) ? UR(256) : mutate_buf[UR(mutate_len)], copy_len);
           }
 
           break;
