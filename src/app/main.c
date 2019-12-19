@@ -133,9 +133,9 @@ u8 skip_deterministic,   /* Skip deterministic stages?       */
     deferred_mode,       /* Deferred forkserver mode?        */
     fast_cal;            /* Try to calibrate faster?         */
 
-u8 coverage_mode = 1;      /* Coverage mode                    */
-u8 syscase_mode = 0;       /* Syscase mode                     */
-u8 syscase_json_mode = 0;  /* Syscase JSON mode                */
+u8 coverage_mode = 1;     /* Coverage mode                    */
+u8 syscase_mode = 0;      /* Syscase mode                     */
+u8 syscase_json_mode = 0; /* Syscase JSON mode                */
 
 s32 out_fd,      /* Persistent fd for out_file       */
     fsrv_ctl_fd, /* Fork server control pipe (write) */
