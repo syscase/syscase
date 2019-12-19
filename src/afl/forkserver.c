@@ -148,6 +148,9 @@ void init_forkserver(char** argv) {
 
   rlen = read(fsrv_st_fd, &status, 4);
 
+  // OPTEE-DEBUG START
+  ACTF("Reset timer");
+  // OPTEE-DEBUG END
   it.it_value.tv_sec = 0;
   it.it_value.tv_usec = 0;
 
